@@ -5,8 +5,9 @@ Gestion des utilisateurs, login, signup, et tiers (Free, Pro, Business).
 
 import sqlite3
 import hashlib
+import secrets
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Dict, Tuple
 import streamlit as st
@@ -43,7 +44,9 @@ class AuthManager:
                 last_login TIMESTAMP,
                 is_active BOOLEAN DEFAULT 1,
                 stripe_customer_id TEXT,
-                subscription_status TEXT DEFAULT 'inactive'
+                subscription_status TEXT DEFAULT 'inactive',
+                reset_token TEXT,
+                reset_token_expires TIMESTAMP
             )
         """)
 
@@ -83,7 +86,7 @@ class AuthManager:
         last_name: str = "",
         company: str = "",
         tier: str = "free"
-    ) -> Tuple[bool, str]:
+    ) -> Tuple[bool, str, Optional[Dict]]:
         """Créer un nouveau compte utilisateur.
 
         Args:
@@ -95,14 +98,14 @@ class AuthManager:
             tier: Niveau (free, pro, business)
 
         Returns:
-            (success, message)
+            (success, message, user_data)
         """
         # Validation
         if not email or "@" not in email:
-            return False, "Email invalide"
+            return False, "❌ Email invalide", None
 
         if len(password) < 6:
-            return False, "Le mot de passe doit contenir au moins 6 caractères"
+            return False, "❌ Le mot de passe doit contenir au moins 6 caractères", None
 
         # Hash password
         password_hash = self._hash_password(password)
@@ -116,15 +119,28 @@ class AuthManager:
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (email, password_hash, first_name, last_name, company, tier))
 
+            user_id = cursor.lastrowid
             conn.commit()
             conn.close()
 
-            return True, "Compte créé avec succès !"
+            # Retourner les données utilisateur pour auto-login
+            user_data = {
+                "id": user_id,
+                "email": email,
+                "first_name": first_name,
+                "last_name": last_name,
+                "company": company,
+                "tier": tier,
+                "created_at": datetime.now().isoformat(),
+                "is_active": True
+            }
+
+            return True, "✅ Compte créé avec succès !", user_data
 
         except sqlite3.IntegrityError:
-            return False, "Cet email est déjà utilisé"
+            return False, "❌ Cet email est déjà utilisé", None
         except Exception as e:
-            return False, f"Erreur lors de la création du compte : {str(e)}"
+            return False, f"❌ Erreur lors de la création du compte : {str(e)}", None
 
     def authenticate(self, email: str, password: str) -> Tuple[bool, Optional[Dict]]:
         """Authentifier un utilisateur.
@@ -172,6 +188,95 @@ class AuthManager:
         else:
             conn.close()
             return False, None
+
+    def generate_reset_token(self, email: str) -> Tuple[bool, str]:
+        """Générer un token de réinitialisation de mot de passe.
+
+        Args:
+            email: Email de l'utilisateur
+
+        Returns:
+            (success, message)
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Vérifier si l'email existe
+        cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+        result = cursor.fetchone()
+
+        if not result:
+            conn.close()
+            return False, "❌ Aucun compte associé à cet email"
+
+        # Générer token (6 chiffres)
+        token = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+        expires = datetime.now() + timedelta(hours=1)
+
+        # Sauvegarder token
+        cursor.execute("""
+            UPDATE users
+            SET reset_token = ?, reset_token_expires = ?
+            WHERE email = ?
+        """, (token, expires.isoformat(), email))
+
+        conn.commit()
+        conn.close()
+
+        return True, f"📧 Code de réinitialisation : **{token}** (valide 1h)\n\n*En production, ce code serait envoyé par email*"
+
+    def reset_password(self, email: str, token: str, new_password: str) -> Tuple[bool, str]:
+        """Réinitialiser le mot de passe avec un token.
+
+        Args:
+            email: Email de l'utilisateur
+            token: Token de réinitialisation
+            new_password: Nouveau mot de passe
+
+        Returns:
+            (success, message)
+        """
+        if len(new_password) < 6:
+            return False, "❌ Le mot de passe doit contenir au moins 6 caractères"
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT reset_token, reset_token_expires
+            FROM users
+            WHERE email = ?
+        """, (email,))
+
+        result = cursor.fetchone()
+
+        if not result or not result[0]:
+            conn.close()
+            return False, "❌ Aucun code de réinitialisation actif"
+
+        stored_token = result[0]
+        expires = datetime.fromisoformat(result[1])
+
+        if datetime.now() > expires:
+            conn.close()
+            return False, "❌ Le code a expiré. Demandez-en un nouveau"
+
+        if token != stored_token:
+            conn.close()
+            return False, "❌ Code incorrect"
+
+        # Réinitialiser le mot de passe
+        new_hash = self._hash_password(new_password)
+        cursor.execute("""
+            UPDATE users
+            SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL
+            WHERE email = ?
+        """, (new_hash, email))
+
+        conn.commit()
+        conn.close()
+
+        return True, "✅ Mot de passe réinitialisé avec succès !"
 
     def get_user_by_id(self, user_id: int) -> Optional[Dict]:
         """Récupérer un utilisateur par ID.
@@ -340,77 +445,217 @@ def init_session_state():
 
 
 def login_page():
-    """Page de login/signup."""
-    st.title("🔐 Connexion - Speed Dating Planner")
+    """Page de login/signup avec design moderne."""
 
-    tab1, tab2 = st.tabs(["Se Connecter", "Créer un Compte"])
+    # CSS personnalisé pour la page d'auth
+    st.markdown("""
+    <style>
+        /* Centrer le contenu */
+        .block-container {
+            max-width: 600px;
+            padding-top: 3rem;
+        }
+
+        /* Style des onglets */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 20px;
+            background-color: #f7fafc;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .stTabs [aria-selected="true"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* Boutons */
+        .stButton > button {
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 12px 24px;
+        }
+
+        /* Messages */
+        .stAlert {
+            border-radius: 8px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Header avec logo/titre
+    st.markdown("""
+    <div style='text-align: center; padding: 20px 0;'>
+        <h1 style='color: #667eea; font-size: 2.5rem; margin-bottom: 10px;'>
+            🎯 Speed Dating Planner
+        </h1>
+        <p style='color: #4a5568; font-size: 1.1rem;'>
+            Plannings optimisés en 1 clic
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
+
+    tab1, tab2, tab3 = st.tabs(["🔑 Connexion", "✨ Créer un Compte", "🔓 Mot de Passe Oublié"])
 
     auth_manager = st.session_state.auth_manager
 
-    # Tab 1 : Login
+    # ===== TAB 1 : LOGIN =====
     with tab1:
-        st.subheader("Connexion")
+        with st.form("login_form", clear_on_submit=False):
+            st.markdown("### Connectez-vous à votre compte")
 
-        with st.form("login_form"):
-            email = st.text_input("Email", key="login_email")
-            password = st.text_input("Mot de passe", type="password", key="login_password")
-            submit = st.form_submit_button("Se Connecter", use_container_width=True, type="primary")
+            email = st.text_input("📧 Email", placeholder="votre@email.com", key="login_email")
+            password = st.text_input("🔒 Mot de passe", type="password", placeholder="••••••••", key="login_password")
+
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                submit = st.form_submit_button("Se Connecter", use_container_width=True, type="primary")
+            with col2:
+                if st.form_submit_button("Annuler", use_container_width=True):
+                    st.rerun()
 
             if submit:
                 if not email or not password:
-                    st.error("Veuillez remplir tous les champs")
+                    st.error("❌ Veuillez remplir tous les champs")
                 else:
-                    success, user_data = auth_manager.authenticate(email, password)
+                    with st.spinner("Connexion en cours..."):
+                        success, user_data = auth_manager.authenticate(email, password)
 
-                    if success:
-                        st.session_state.authenticated = True
-                        st.session_state.user = user_data
-                        st.success(f"Bienvenue {user_data['first_name'] or user_data['email']} !")
-                        st.rerun()
-                    else:
-                        st.error("Email ou mot de passe incorrect")
+                        if success:
+                            st.session_state.authenticated = True
+                            st.session_state.user = user_data
+                            st.success(f"✅ Bienvenue **{user_data['first_name'] or user_data['email']}** !")
+                            st.balloons()
+                            st.rerun()
+                        else:
+                            st.error("❌ Email ou mot de passe incorrect")
 
-    # Tab 2 : Signup
+        st.caption("Pas encore de compte ? Utilisez l'onglet **Créer un Compte**")
+
+    # ===== TAB 2 : SIGNUP =====
     with tab2:
-        st.subheader("Créer un Compte Gratuit")
+        with st.form("signup_form", clear_on_submit=True):
+            st.markdown("### Créez votre compte gratuit")
 
-        with st.form("signup_form"):
-            email = st.text_input("Email *", key="signup_email")
-            password = st.text_input("Mot de passe * (min. 6 caractères)", type="password", key="signup_password")
-            password_confirm = st.text_input("Confirmer mot de passe *", type="password", key="signup_password_confirm")
+            st.info("🎉 **Plan Free inclus** : 30 participants, 3 sessions, export CSV/JSON")
+
+            email = st.text_input("📧 Email *", placeholder="votre@email.com", key="signup_email")
 
             col1, col2 = st.columns(2)
             with col1:
-                first_name = st.text_input("Prénom", key="signup_first_name")
+                password = st.text_input("🔒 Mot de passe *", type="password", placeholder="Min. 6 caractères", key="signup_password")
             with col2:
-                last_name = st.text_input("Nom", key="signup_last_name")
+                password_confirm = st.text_input("🔒 Confirmer *", type="password", placeholder="Même mot de passe", key="signup_password_confirm")
 
-            company = st.text_input("Entreprise (optionnel)", key="signup_company")
+            st.markdown("**Informations personnelles** (optionnel)")
 
-            st.info("Plan Free : 30 participants max, 3 sessions, export CSV/JSON")
+            col1, col2 = st.columns(2)
+            with col1:
+                first_name = st.text_input("Prénom", placeholder="Jean", key="signup_first_name")
+            with col2:
+                last_name = st.text_input("Nom", placeholder="Dupont", key="signup_last_name")
 
-            submit = st.form_submit_button("Créer mon Compte Gratuit", use_container_width=True, type="primary")
+            company = st.text_input("Entreprise", placeholder="Mon Entreprise (optionnel)", key="signup_company")
+
+            st.divider()
+
+            submit = st.form_submit_button("✨ Créer mon Compte Gratuit", use_container_width=True, type="primary")
 
             if submit:
                 if not email or not password:
-                    st.error("Email et mot de passe obligatoires")
+                    st.error("❌ Email et mot de passe obligatoires")
                 elif password != password_confirm:
-                    st.error("Les mots de passe ne correspondent pas")
+                    st.error("❌ Les mots de passe ne correspondent pas")
                 else:
-                    success, message = auth_manager.create_user(
-                        email=email,
-                        password=password,
-                        first_name=first_name,
-                        last_name=last_name,
-                        company=company,
-                        tier="free"
-                    )
+                    with st.spinner("Création de votre compte..."):
+                        success, message, user_data = auth_manager.create_user(
+                            email=email,
+                            password=password,
+                            first_name=first_name,
+                            last_name=last_name,
+                            company=company,
+                            tier="free"
+                        )
 
+                        if success:
+                            st.success(message)
+                            st.success(f"🎉 Bienvenue **{first_name or email}** !")
+
+                            # AUTO-LOGIN après signup
+                            st.session_state.authenticated = True
+                            st.session_state.user = user_data
+
+                            st.balloons()
+                            st.info("🚀 Redirection vers l'application...")
+                            st.rerun()
+                        else:
+                            st.error(message)
+
+    # ===== TAB 3 : MOT DE PASSE OUBLIÉ =====
+    with tab3:
+        st.markdown("### Réinitialiser votre mot de passe")
+
+        # Étape 1 : Demander email et générer token
+        with st.form("reset_request_form"):
+            st.info("Entrez votre email pour recevoir un code de réinitialisation")
+
+            email = st.text_input("📧 Email", placeholder="votre@email.com", key="reset_email")
+            submit_request = st.form_submit_button("📧 Envoyer le Code", use_container_width=True, type="primary")
+
+            if submit_request:
+                if not email:
+                    st.error("❌ Veuillez entrer votre email")
+                else:
+                    success, message = auth_manager.generate_reset_token(email)
                     if success:
                         st.success(message)
-                        st.info("Vous pouvez maintenant vous connecter avec vos identifiants")
+                        st.session_state.reset_email = email
                     else:
                         st.error(message)
+
+        st.divider()
+
+        # Étape 2 : Entrer token et nouveau mot de passe
+        if "reset_email" in st.session_state:
+            with st.form("reset_password_form"):
+                st.markdown("**Réinitialisez votre mot de passe**")
+
+                token = st.text_input("🔢 Code de réinitialisation", placeholder="123456", max_chars=6, key="reset_token")
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    new_password = st.text_input("🔒 Nouveau mot de passe", type="password", placeholder="Min. 6 caractères", key="reset_new_password")
+                with col2:
+                    new_password_confirm = st.text_input("🔒 Confirmer", type="password", placeholder="Même mot de passe", key="reset_new_password_confirm")
+
+                submit_reset = st.form_submit_button("✅ Réinitialiser", use_container_width=True, type="primary")
+
+                if submit_reset:
+                    if not token or not new_password:
+                        st.error("❌ Tous les champs sont obligatoires")
+                    elif new_password != new_password_confirm:
+                        st.error("❌ Les mots de passe ne correspondent pas")
+                    else:
+                        success, message = auth_manager.reset_password(
+                            st.session_state.reset_email,
+                            token,
+                            new_password
+                        )
+
+                        if success:
+                            st.success(message)
+                            del st.session_state.reset_email
+                            st.info("Vous pouvez maintenant vous connecter avec votre nouveau mot de passe")
+                        else:
+                            st.error(message)
 
 
 def logout():
@@ -444,28 +689,41 @@ def show_user_info():
 
         with st.sidebar:
             st.divider()
-            st.write(f"**👤 {user['first_name'] or user['email']}**")
 
-            # Badge tier
+            # Nom utilisateur
+            display_name = user['first_name'] or user['email'].split('@')[0]
+            st.markdown(f"### 👤 {display_name}")
+
+            # Badge tier avec couleurs
             tier_colors = {
-                "free": "🆓",
-                "pro": "⭐",
-                "business": "💎"
+                "free": ("#718096", "🆓 Free"),
+                "pro": ("#667eea", "⭐ Pro"),
+                "business": ("#d69e2e", "💎 Business")
             }
-            st.write(f"{tier_colors.get(user['tier'], '🆓')} **{user['tier'].upper()}**")
+            color, label = tier_colors.get(user['tier'], tier_colors['free'])
 
-            # Limites
+            st.markdown(f"""
+            <div style='background: {color}; color: white; padding: 8px 16px; border-radius: 8px; text-align: center; font-weight: 600; margin-bottom: 10px;'>
+                {label}
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Limites du plan
             auth_manager = st.session_state.auth_manager
             limits = auth_manager.get_tier_limits(user['tier'])
 
-            st.caption(f"Max participants: {limits['max_participants']}")
-            st.caption(f"Max sessions: {limits['max_sessions']}")
+            with st.expander("📊 Limites de votre plan"):
+                st.caption(f"👥 Participants : {limits['max_participants']}")
+                st.caption(f"🔢 Sessions : {limits['max_sessions']}")
+                st.caption(f"📄 PDF : {'✅' if limits['pdf_export'] else '❌'}")
+                st.caption(f"⭐ VIP : {'✅' if limits['vip_management'] else '❌'}")
 
             # Bouton upgrade (si pas business)
             if user['tier'] != 'business':
-                if st.button("⬆️ Upgrade", use_container_width=True):
+                if st.button("⬆️ Passer à Pro", use_container_width=True, type="primary"):
                     st.switch_page("pages/7_💳_Pricing.py")
 
             # Logout
+            st.divider()
             if st.button("🚪 Déconnexion", use_container_width=True):
                 logout()
