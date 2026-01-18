@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Créez des plannings Speed Dating parfaits en 1 clic. 0 erreur garantie. Export PDF professionnel.">
+    <title>Speed Dating Planner - Plannings Optimisés en 1 Clic</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 120px 20px 100px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        .cta-primary {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 18px 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .cta-secondary {
+            display: inline-block;
+            background: transparent;
+            color: white;
+            padding: 18px 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: 2px solid white;
+            border-radius: 50px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-left: 20px;
+            animation: fadeInUp 0.8s ease-out 0.5s backwards;
+        }
+
+        .cta-secondary:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: #f7fafc;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .stat-item {
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #4a5568;
+        }
+
+        /* Features Section */
+        .features {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 60px;
+            color: #2d3748;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .feature-card p {
+            color: #4a5568;
+            line-height: 1.8;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 80px 20px;
+        }
+
+        .pricing-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .pricing-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+
+        .pricing-card.featured {
+            border: 3px solid #667eea;
+            transform: scale(1.05);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .pricing-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .pricing-price span {
+            font-size: 1.2rem;
+            color: #4a5568;
+            font-weight: 400;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: #48bb78;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .pricing-cta {
+            display: block;
+            background: #667eea;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-cta:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        /* Email Capture Section */
+        .email-capture {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 80px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .email-capture h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .email-capture p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        .email-form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 15px;
+        }
+
+        .email-input {
+            flex: 1;
+            padding: 18px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            outline: none;
+        }
+
+        .email-submit {
+            background: #2d3748;
+            color: white;
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .email-submit:hover {
+            background: #1a202c;
+            transform: scale(1.05);
+        }
+
+        /* Footer */
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .footer p {
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #667eea;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.2rem;
+            }
+
+            .cta-secondary {
+                margin-left: 0;
+                margin-top: 20px;
+            }
+
+            .email-form {
+                flex-direction: column;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>🎯 Créez des Plannings Speed Dating Parfaits en 1 Clic</h1>
+            <p>Algorithme optimisé • 0 erreur garantie • Export PDF professionnel</p>
+            <a href="https://tanorbessane-speed-dating-planner.streamlit.app" class="cta-primary" target="_blank">🚀 Essayer Gratuitement</a>
+            <a href="#pricing" class="cta-secondary">💰 Voir les Prix</a>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-number">&lt;1s</div>
+                <div class="stat-label">Génération pour 100 participants</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">Tests passants (309/315)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Équité garantie</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Répétitions</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2 class="section-title">✨ Fonctionnalités Principales</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Ultra Rapide</h3>
+                <p>Génération instantanée même pour 100+ participants. Algorithme optimisé pour des performances maximales.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚖️</div>
+                <h3>Équité Garantie</h3>
+                <p>Écart maximum de 1 rencontre entre tous les participants. Tous rencontrent le même nombre de personnes.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Analyses Avancées</h3>
+                <p>Heatmap interactive, graphiques détaillés, métriques de qualité en temps réel.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Gestion VIP</h3>
+                <p>Priorité automatique pour participants VIP avec métriques dédiées.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <h3>Multi-Export</h3>
+                <p>CSV, JSON, et PDF professionnel haute résolution avec graphiques intégrés.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Interface Moderne</h3>
+                <p>Design ergonomique et intuitif. Aucune formation nécessaire.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="pricing-container">
+            <h2 class="section-title">💰 Tarifs Simples et Transparents</h2>
+
+            <div class="pricing-grid">
+                <!-- Free Plan -->
+                <div class="pricing-card">
+                    <h3>Free</h3>
+                    <div class="pricing-price">0€<span>/mois</span></div>
+                    <ul class="pricing-features">
+                        <li>Jusqu'à 30 participants</li>
+                        <li>3 sessions maximum</li>
+                        <li>Export CSV/JSON</li>
+                        <li>Support communautaire</li>
+                        <li>Analyses basiques</li>
+                    </ul>
+                    <a href="https://tanorbessane-speed-dating-planner.streamlit.app" class="pricing-cta" target="_blank">Commencer Gratuit</a>
+                </div>
+
+                <!-- Pro Plan (Featured) -->
+                <div class="pricing-card featured">
+                    <span class="pricing-badge">⭐ POPULAIRE</span>
+                    <h3>Pro</h3>
+                    <div class="pricing-price">29€<span>/mois</span></div>
+                    <ul class="pricing-features">
+                        <li>Jusqu'à 150 participants</li>
+                        <li>Sessions illimitées</li>
+                        <li>Export PDF professionnel</li>
+                        <li>Gestion VIP</li>
+                        <li>Analyses avancées</li>
+                        <li>Support prioritaire</li>
+                        <li>Contraintes personnalisées</li>
+                    </ul>
+                    <a href="#contact" class="pricing-cta">Démarrer Essai 14 Jours</a>
+                </div>
+
+                <!-- Business Plan -->
+                <div class="pricing-card">
+                    <h3>Business</h3>
+                    <div class="pricing-price">99€<span>/mois</span></div>
+                    <ul class="pricing-features">
+                        <li>Participants illimités</li>
+                        <li>Multi-utilisateurs (5)</li>
+                        <li>API access</li>
+                        <li>White-label</li>
+                        <li>Intégration CRM</li>
+                        <li>Support dédié 24/7</li>
+                        <li>Formation personnalisée</li>
+                        <li>SLA 99.9%</li>
+                    </ul>
+                    <a href="#contact" class="pricing-cta">Contacter Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Email Capture Section -->
+    <section class="email-capture" id="contact">
+        <h2>📧 Restez Informé</h2>
+        <p>Recevez nos dernières updates et offres exclusives</p>
+
+        <form class="email-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+            <input type="email" name="email" class="email-input" placeholder="Votre email professionnel" required>
+            <button type="submit" class="email-submit">S'inscrire</button>
+        </form>
+
+        <p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+            🔒 Vos données sont sécurisées. Pas de spam.
+        </p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 Speed Dating Planner - Tous droits réservés</p>
+        <div class="footer-links">
+            <a href="#pricing">Tarifs</a>
+            <a href="https://tanorbessane-speed-dating-planner.streamlit.app" target="_blank">Application</a>
+            <a href="https://github.com/Tanorbessane/speed-dating-planner" target="_blank">GitHub</a>
+            <a href="mailto:support@speeddating-planner.com">Support</a>
+        </div>
+        <p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.7;">
+            Développé avec ❤️ en Python
+        </p>
+    </footer>
+</body>
+</html>
