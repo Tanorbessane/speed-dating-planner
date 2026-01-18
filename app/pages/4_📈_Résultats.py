@@ -12,7 +12,18 @@ import tempfile
 from src.exporters import export_to_csv, export_to_json
 from src.display_utils import format_table_participants
 
+# Import auth
+sys.path.append(str(Path(__file__).parent.parent))
+from auth import require_auth, init_session_state, show_user_info
+
 st.set_page_config(page_title="Résultats", page_icon="📈", layout="wide")
+
+# Auth required
+init_session_state()
+if not require_auth():
+    st.stop()
+
+show_user_info()
 
 st.title("📈 Résultats et Exports")
 
@@ -321,7 +332,15 @@ with tab3:
     if config.N > 100:
         st.warning("⚠️ Génération PDF peut prendre 10-15s pour N > 100")
 
-    if st.button("📄 Générer Rapport PDF", type="primary", use_container_width=True):
+    # Vérifier si l'utilisateur a accès à l'export PDF
+    auth_manager = st.session_state.auth_manager
+    user_tier = st.session_state.user['tier']
+    ok_pdf, msg_pdf = auth_manager.check_limit(user_tier, "pdf_export")
+
+    if not ok_pdf:
+        st.error("❌ Export PDF disponible uniquement en Pro et Business")
+        st.info("⬆️ Passez au plan Pro pour débloquer l'export PDF dans **💳 Pricing**")
+    elif st.button("📄 Générer Rapport PDF", type="primary", use_container_width=True):
         with st.spinner("Génération PDF en cours..."):
             try:
                 from src.pdf_exporter import export_to_pdf

@@ -12,7 +12,18 @@ import time
 from src.planner import generate_optimized_planning
 from src.display_utils import format_table_participants
 
+# Import auth
+sys.path.append(str(Path(__file__).parent.parent))
+from auth import require_auth, init_session_state, show_user_info
+
 st.set_page_config(page_title="Génération", page_icon="🎯")
+
+# Auth required
+init_session_state()
+if not require_auth():
+    st.stop()
+
+show_user_info()
 
 st.title("🎯 Génération de Planning")
 
@@ -147,6 +158,15 @@ if st.button("🚀 Générer Planning Optimisé", type="primary", use_container_
     st.session_state.metrics = metrics
     st.session_state.generation_time = duration
     st.session_state.seed_used = seed
+
+    # Logger l'utilisation
+    auth_manager = st.session_state.auth_manager
+    auth_manager.log_usage(
+        user_id=st.session_state.user['id'],
+        action="generate_planning",
+        participants_count=config.N,
+        sessions_count=config.S
+    )
 
     # Afficher résultats
     st.success(f"🎉 Planning généré avec succès en {duration:.3f}s !")

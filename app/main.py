@@ -15,6 +15,9 @@ sys.path.insert(0, str(project_root))
 
 import streamlit as st
 
+# Import authentification
+from auth import init_session_state, show_user_info, require_auth
+
 # Configuration de la page
 st.set_page_config(
     page_title="Speed Dating Planner",
@@ -22,6 +25,17 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Initialiser la session d'authentification
+init_session_state()
+
+# Vérifier authentification (optionnel pour page d'accueil, mais affiche login)
+if not st.session_state.authenticated:
+    # Page d'accueil publique + option de login
+    pass
+else:
+    # Afficher les infos utilisateur dans la sidebar
+    show_user_info()
 
 # CSS personnalisé pour un design moderne
 st.markdown("""

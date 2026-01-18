@@ -18,7 +18,18 @@ sys.path.insert(0, str(project_root))
 import streamlit as st
 from src.analysis import compute_meetings_matrix, compute_matrix_statistics, compute_quality_score
 
+# Import auth
+sys.path.append(str(Path(__file__).parent.parent))
+from auth import require_auth, init_session_state, show_user_info
+
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
+
+# Auth required
+init_session_state()
+if not require_auth():
+    st.stop()
+
+show_user_info()
 
 # ===== VÉRIFIER PLANNING EXISTE =====
 if "planning" not in st.session_state or st.session_state.planning is None:

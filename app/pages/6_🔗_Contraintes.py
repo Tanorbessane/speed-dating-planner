@@ -15,7 +15,18 @@ from src.models import (
     PlanningConfig,
 )
 
+# Import auth
+sys.path.append(str(Path(__file__).parent.parent))
+from auth import require_auth, init_session_state, show_user_info
+
 st.set_page_config(page_title="Contraintes", page_icon="🔗", layout="wide")
+
+# Auth required
+init_session_state()
+if not require_auth():
+    st.stop()
+
+show_user_info()
 
 st.title("🔗 Contraintes de Groupes")
 

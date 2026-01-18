@@ -11,7 +11,18 @@ import streamlit as st
 from src.models import PlanningConfig
 from src.validation import validate_config, InvalidConfigurationError
 
+# Import auth
+sys.path.append(str(Path(__file__).parent.parent))
+from auth import require_auth, init_session_state, show_user_info
+
 st.set_page_config(page_title="Configuration", page_icon="⚙️")
+
+# Auth required
+init_session_state()
+if not require_auth():
+    st.stop()
+
+show_user_info()
 
 st.title("⚙️ Configuration de l'Événement")
 
@@ -122,6 +133,24 @@ if submitted:
         # Créer et valider config
         config = PlanningConfig(N=N, X=X, x=x, S=S)
         validate_config(config)
+
+        # Vérifier les limites du tier utilisateur
+        auth_manager = st.session_state.auth_manager
+        user_tier = st.session_state.user['tier']
+
+        # Check limite participants
+        ok_participants, msg_participants = auth_manager.check_limit(user_tier, "max_participants", N)
+        if not ok_participants:
+            st.error(f"❌ {msg_participants}")
+            st.info("⬆️ Passez à un plan supérieur dans **💳 Pricing**")
+            st.stop()
+
+        # Check limite sessions
+        ok_sessions, msg_sessions = auth_manager.check_limit(user_tier, "max_sessions", S)
+        if not ok_sessions:
+            st.error(f"❌ {msg_sessions}")
+            st.info("⬆️ Passez à un plan supérieur dans **💳 Pricing**")
+            st.stop()
 
         # Sauvegarder dans session state
         st.session_state.N = N

@@ -18,7 +18,18 @@ from src.participants import (
     normalize_dataframe,
 )
 
+# Import auth
+sys.path.append(str(Path(__file__).parent.parent))
+from auth import require_auth, init_session_state, show_user_info
+
 st.set_page_config(page_title="Participants", page_icon="👥", layout="wide")
+
+# Auth required
+init_session_state()
+if not require_auth():
+    st.stop()
+
+show_user_info()
 
 st.title("👥 Gestion des Participants")
 
