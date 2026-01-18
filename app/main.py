@@ -6,6 +6,13 @@ Usage:
     streamlit run app/main.py
 """
 
+import sys
+from pathlib import Path
+
+# Ajouter le répertoire parent au PYTHONPATH pour permettre les imports depuis src/
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 import streamlit as st
 
 # Configuration de la page

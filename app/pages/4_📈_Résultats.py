@@ -1,8 +1,14 @@
 """Page Résultats - Analyses et exports."""
 
+import sys
+from pathlib import Path
+
+# Ajouter le répertoire parent au PYTHONPATH pour permettre les imports depuis src/
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 import streamlit as st
 import tempfile
-from pathlib import Path
 from src.exporters import export_to_csv, export_to_json
 from src.display_utils import format_table_participants
 

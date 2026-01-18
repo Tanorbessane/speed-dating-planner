@@ -1,5 +1,12 @@
 """Page Configuration - Paramètres événement."""
 
+import sys
+from pathlib import Path
+
+# Ajouter le répertoire parent au PYTHONPATH pour permettre les imports depuis src/
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 import streamlit as st
 from src.models import PlanningConfig
 from src.validation import validate_config, InvalidConfigurationError

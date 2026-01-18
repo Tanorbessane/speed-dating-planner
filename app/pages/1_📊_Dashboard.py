@@ -8,6 +8,13 @@ Dashboard principal affichant :
 - Navigation rapide vers autres pages
 """
 
+import sys
+from pathlib import Path
+
+# Ajouter le répertoire parent au PYTHONPATH pour permettre les imports depuis src/
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 import streamlit as st
 from src.analysis import compute_meetings_matrix, compute_matrix_statistics, compute_quality_score
 

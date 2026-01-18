@@ -1,5 +1,12 @@
 """Page Participants - Import et gestion CSV/Excel."""
 
+import sys
+from pathlib import Path
+
+# Ajouter le répertoire parent au PYTHONPATH pour permettre les imports depuis src/
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 import streamlit as st
 import pandas as pd
 import io
