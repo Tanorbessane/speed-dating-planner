@@ -1,0 +1,99 @@
+story: 3.3-cli-interface
+description: CLI complet (NFR7) avec exit codes 0/1/2/3 et messages français
+
+checks:
+  - name: Module cli.py Exists
+    command: test -f src/cli.py && echo "✓ src/cli.py créé"
+    expected: "✓ src/cli.py créé"
+
+  - name: parse_args Function
+    command: grep -q "def parse_args" src/cli.py && echo "✓ parse_args() implémentée"
+    expected: "✓ parse_args() implémentée"
+
+  - name: main Function
+    command: grep -q "def main" src/cli.py && echo "✓ main() implémentée"
+    expected: "✓ main() implémentée"
+
+  - name: Required Args Present
+    command: |
+      grep -q "\-n.*\-\-participants" src/cli.py && \
+      grep -q "\-t.*\-\-tables" src/cli.py && \
+      grep -q "\-c.*\-\-capacity" src/cli.py && \
+      grep -q "\-s.*\-\-sessions" src/cli.py && \
+      echo "✓ Args requis (-n, -t, -c, -s)"
+    expected: "✓ Args requis (-n, -t, -c, -s)"
+
+  - name: Optional Args Present
+    command: |
+      grep -q "\-o.*\-\-output" src/cli.py && \
+      grep -q "\-f.*\-\-format" src/cli.py && \
+      grep -q "\-\-seed" src/cli.py && \
+      grep -q "\-v.*\-\-verbose" src/cli.py && \
+      echo "✓ Args optionnels (-o, -f, --seed, -v)"
+    expected: "✓ Args optionnels (-o, -f, --seed, -v)"
+
+  - name: Exit Code 0 Success
+    command: grep -q "sys.exit(0)" src/cli.py && echo "✓ Exit code 0 (succès)"
+    expected: "✓ Exit code 0 (succès)"
+
+  - name: Exit Code 1 Invalid Config
+    command: grep -q "sys.exit(1)" src/cli.py && echo "✓ Exit code 1 (config invalide)"
+    expected: "✓ Exit code 1 (config invalide)"
+
+  - name: Exit Code 2 IO Error
+    command: grep -q "sys.exit(2)" src/cli.py && echo "✓ Exit code 2 (I/O)"
+    expected: "✓ Exit code 2 (I/O)"
+
+  - name: Exit Code 3 Unexpected
+    command: grep -q "sys.exit(3)" src/cli.py && echo "✓ Exit code 3 (inattendu)"
+    expected: "✓ Exit code 3 (inattendu)"
+
+  - name: No Business Logic
+    command: |
+      grep -q "délégué à src.validation" src/cli.py && \
+      grep -q "délégué à src.planner" src/cli.py && \
+      grep -q "délégué à src.exporters" src/cli.py && \
+      echo "✓ Orchestration uniquement (zéro logique métier)"
+    expected: "✓ Orchestration uniquement (zéro logique métier)"
+
+  - name: French Messages
+    command: |
+      grep -q "Configuration invalide" src/cli.py && \
+      grep -q "Erreur I/O" src/cli.py && \
+      echo "✓ Messages français (NFR10)"
+    expected: "✓ Messages français (NFR10)"
+
+  - name: Test File Exists
+    command: test -f tests/test_cli.py && echo "✓ tests/test_cli.py créé"
+    expected: "✓ tests/test_cli.py créé"
+
+  - name: Test Exit Codes
+    command: grep -q "test_exit_0_on_success" tests/test_cli.py && echo "✓ Test exit codes"
+    expected: "✓ Test exit codes"
+
+  - name: Test CSV Export
+    command: grep -q "test_csv_export" tests/test_cli.py && echo "✓ Test export CSV"
+    expected: "✓ Test export CSV"
+
+  - name: Test JSON Export
+    command: grep -q "test_json_export" tests/test_cli.py && echo "✓ Test export JSON"
+    expected: "✓ Test export JSON"
+
+  - name: Test Determinism
+    command: grep -q "test_same_seed_same_output" tests/test_cli.py && echo "✓ Test déterminisme"
+    expected: "✓ Test déterminisme"
+
+  - name: Test Integration
+    command: grep -q "test_full_workflow" tests/test_cli.py && echo "✓ Tests intégration end-to-end"
+    expected: "✓ Tests intégration end-to-end"
+
+  - name: Type Hints Complete
+    command: grep -A3 "def parse_args" src/cli.py | grep -q "argparse.Namespace" && echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"
+
+  - name: Docstring Complete
+    command: |
+      grep -q "Exit codes:" src/cli.py && \
+      grep -q "Workflow:" src/cli.py && \
+      echo "✓ Docstrings complets"
+    expected: "✓ Docstrings complets"

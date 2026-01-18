@@ -1,0 +1,62 @@
+story: 2.2-local-improvement
+description: Recherche locale greedy avec détection plateau
+
+checks:
+  - name: Module improvement.py Exists
+    command: test -f src/improvement.py && echo "✓ src/improvement.py créé"
+    expected: "✓ src/improvement.py créé"
+
+  - name: improve_planning Function
+    command: grep -q "def improve_planning" src/improvement.py && echo "✓ improve_planning() implémentée"
+    expected: "✓ improve_planning() implémentée"
+
+  - name: Uses evaluate_swap
+    command: grep -q "evaluate_swap" src/improvement.py && echo "✓ Utilise evaluate_swap()"
+    expected: "✓ Utilise evaluate_swap()"
+
+  - name: Plateau Detection
+    command: grep -q "plateau" src/improvement.py && echo "✓ Détection plateau implémentée"
+    expected: "✓ Détection plateau implémentée"
+
+  - name: Max Iterations Parameter
+    command: grep -q "max_iterations: int = 100" src/improvement.py && echo "✓ max_iterations parameter"
+    expected: "✓ max_iterations parameter"
+
+  - name: Deep Copy
+    command: grep -q "copy.deepcopy" src/improvement.py && echo "✓ Deep copy planning"
+    expected: "✓ Deep copy planning"
+
+  - name: Complexity Documented
+    command: grep -q "O(iter × S × X² × x²)" src/improvement.py && echo "✓ Complexité documentée"
+    expected: "✓ Complexité documentée"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_improvement.py && echo "✓ tests/test_improvement.py créé"
+    expected: "✓ tests/test_improvement.py créé"
+
+  - name: Test Improves Baseline
+    command: grep -q "test_improves_baseline" tests/test_improvement.py && echo "✓ Test amélioration baseline"
+    expected: "✓ Test amélioration baseline"
+
+  - name: Test Original Not Modified
+    command: grep -q "test_original_planning_not_modified" tests/test_improvement.py && echo "✓ Test copie profonde"
+    expected: "✓ Test copie profonde"
+
+  - name: Test Plateau Detection
+    command: grep -q "test_plateau_detection" tests/test_improvement.py && echo "✓ Test détection plateau"
+    expected: "✓ Test détection plateau"
+
+  - name: Test Table Sizes Preserved
+    command: grep -q "test_table_sizes_preserved" tests/test_improvement.py && echo "✓ Test FR7 préservé"
+    expected: "✓ Test FR7 préservé"
+
+  - name: Type Hints Complete
+    command: grep -q "def improve_planning(.*) -> Planning:" src/improvement.py && echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"
+
+  - name: Docstring Complete
+    command: |
+      grep -q "Améliore un planning" src/improvement.py && \
+      grep -q "Complexity:" src/improvement.py && \
+      echo "✓ Docstring complet"
+    expected: "✓ Docstring complet"

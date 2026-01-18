@@ -1,0 +1,66 @@
+story: 3.1-exporteur-csv
+description: Exporteur CSV format FR10 (session_id, table_id, participant_id)
+
+checks:
+  - name: Module exporters.py Exists
+    command: test -f src/exporters.py && echo "✓ src/exporters.py créé"
+    expected: "✓ src/exporters.py créé"
+
+  - name: export_to_csv Function
+    command: grep -q "def export_to_csv" src/exporters.py && echo "✓ export_to_csv() implémentée"
+    expected: "✓ export_to_csv() implémentée"
+
+  - name: CSV Header FR10
+    command: grep -q 'session_id.*table_id.*participant_id' src/exporters.py && echo "✓ Header FR10"
+    expected: "✓ Header FR10"
+
+  - name: UTF-8-sig Encoding
+    command: grep -q "utf-8-sig" src/exporters.py && echo "✓ Encodage UTF-8 BOM"
+    expected: "✓ Encodage UTF-8 BOM"
+
+  - name: Path Handling
+    command: grep -q "Path(filepath)" src/exporters.py && echo "✓ Path handling"
+    expected: "✓ Path handling"
+
+  - name: Sorted Participants
+    command: grep -q "sorted(table)" src/exporters.py && echo "✓ Participants triés (déterminisme)"
+    expected: "✓ Participants triés (déterminisme)"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_exporters.py && echo "✓ tests/test_exporters.py créé"
+    expected: "✓ tests/test_exporters.py créé"
+
+  - name: Test Export Success
+    command: grep -q "test_export_success" tests/test_exporters.py && echo "✓ Test export réussit"
+    expected: "✓ Test export réussit"
+
+  - name: Test Correct Lines
+    command: grep -q "test_correct_number_of_lines" tests/test_exporters.py && echo "✓ Test nombre lignes"
+    expected: "✓ Test nombre lignes"
+
+  - name: Test DictReader
+    command: grep -q "test_csv_readable_with_dictreader" tests/test_exporters.py && echo "✓ Test DictReader"
+    expected: "✓ Test DictReader"
+
+  - name: Test UTF-8 BOM
+    command: grep -q "test_utf8_bom_present" tests/test_exporters.py && echo "✓ Test BOM présent"
+    expected: "✓ Test BOM présent"
+
+  - name: Test Path Spaces
+    command: grep -q "test_path_with_spaces" tests/test_exporters.py && echo "✓ Test chemins avec espaces"
+    expected: "✓ Test chemins avec espaces"
+
+  - name: Test Overwrite
+    command: grep -q "test_overwrite_existing_file" tests/test_exporters.py && echo "✓ Test écrasement fichier"
+    expected: "✓ Test écrasement fichier"
+
+  - name: Type Hints Complete
+    command: grep -q "def export_to_csv(.*) -> None:" src/exporters.py && echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"
+
+  - name: Docstring Complete
+    command: |
+      grep -q "Format CSV conforme FR10" src/exporters.py && \
+      grep -q "Complexity:" src/exporters.py && \
+      echo "✓ Docstring complet"
+    expected: "✓ Docstring complet"

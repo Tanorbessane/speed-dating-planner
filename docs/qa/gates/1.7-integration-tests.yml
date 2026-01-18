@@ -1,0 +1,31 @@
+story: 1.7-integration-tests
+description: Tests intégration end-to-end pipeline baseline + metrics
+
+checks:
+  - name: Integration Tests Exist
+    command: test -f tests/test_integration.py && echo "✓ tests/test_integration.py créé"
+    expected: "✓ tests/test_integration.py créé"
+
+  - name: Test End-to-End Success
+    command: grep -q "test_end_to_end_success" tests/test_integration.py && echo "✓ Test end-to-end présent"
+    expected: "✓ Test end-to-end présent"
+
+  - name: Test Invalid Config
+    command: grep -q "test_invalid_config_rejected" tests/test_integration.py && echo "✓ Test config invalide"
+    expected: "✓ Test config invalide"
+
+  - name: Test Example A
+    command: grep -q "test_example_a_n30" tests/test_integration.py && echo "✓ Test Exemple A (N=30)"
+    expected: "✓ Test Exemple A (N=30)"
+
+  - name: Test Example B
+    command: grep -q "test_example_b_n100" tests/test_integration.py && echo "✓ Test Exemple B (N=100)"
+    expected: "✓ Test Exemple B (N=100)"
+
+  - name: Test Timing
+    command: grep -q "test_end_to_end_timing" tests/test_integration.py && echo "✓ Test timing total"
+    expected: "✓ Test timing total"
+
+  - name: Test Determinism
+    command: grep -q "test_determinism_across_pipeline" tests/test_integration.py && echo "✓ Test déterminisme pipeline"
+    expected: "✓ Test déterminisme pipeline"

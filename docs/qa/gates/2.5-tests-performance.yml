@@ -1,0 +1,23 @@
+story: 2.5-tests-performance
+description: Tests de performance NFR1-NFR3
+
+checks:
+  - name: Performance Tests Exist
+    command: test -f tests/test_performance.py && echo "✓ tests/test_performance.py créé"
+    expected: "✓ tests/test_performance.py créé"
+
+  - name: Test NFR1 N100
+    command: grep -q "test_nfr1_n100_under_2s" tests/test_performance.py && echo "✓ Test NFR1 (N=100 <2s)"
+    expected: "✓ Test NFR1 (N=100 <2s)"
+
+  - name: Test NFR2 N300
+    command: grep -q "test_nfr2_n300_under_5s" tests/test_performance.py && echo "✓ Test NFR2 (N=300 <5s)"
+    expected: "✓ Test NFR2 (N=300 <5s)"
+
+  - name: Test NFR3 N1000
+    command: grep -q "test_nfr3_n1000_under_30s" tests/test_performance.py && echo "✓ Test NFR3 (N=1000 <30s)"
+    expected: "✓ Test NFR3 (N=1000 <30s)"
+
+  - name: Slow Marker
+    command: grep -q "@pytest.mark.slow" tests/test_performance.py && echo "✓ Tests marqués slow"
+    expected: "✓ Tests marqués slow"

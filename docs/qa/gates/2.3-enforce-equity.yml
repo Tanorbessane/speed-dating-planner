@@ -1,0 +1,57 @@
+story: 2.3-enforce-equity
+description: Garantie équité FR6 (equity_gap ≤ 1)
+
+checks:
+  - name: Module equity.py Exists
+    command: test -f src/equity.py && echo "✓ src/equity.py créé"
+    expected: "✓ src/equity.py créé"
+
+  - name: enforce_equity Function
+    command: grep -q "def enforce_equity" src/equity.py && echo "✓ enforce_equity() implémentée"
+    expected: "✓ enforce_equity() implémentée"
+
+  - name: FR6 Guarantee
+    command: grep -q "equity_gap ≤ 1" src/equity.py && echo "✓ Garantie FR6 documentée"
+    expected: "✓ Garantie FR6 documentée"
+
+  - name: Uses evaluate_swap
+    command: grep -q "evaluate_swap" src/equity.py && echo "✓ Utilise evaluate_swap()"
+    expected: "✓ Utilise evaluate_swap()"
+
+  - name: Over/Under Exposed
+    command: |
+      grep -q "over_exposed" src/equity.py && \
+      grep -q "under_exposed" src/equity.py && \
+      echo "✓ Détection over/under-exposed"
+    expected: "✓ Détection over/under-exposed"
+
+  - name: Deep Copy
+    command: grep -q "copy.deepcopy" src/equity.py && echo "✓ Deep copy planning"
+    expected: "✓ Deep copy planning"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_equity.py && echo "✓ tests/test_equity.py créé"
+    expected: "✓ tests/test_equity.py créé"
+
+  - name: Test Achieves Equity
+    command: grep -q "test_achieves_equity_gap_le_1" tests/test_equity.py && echo "✓ Test garantie FR6"
+    expected: "✓ Test garantie FR6"
+
+  - name: Test Improves Inequitable
+    command: grep -q "test_improves_inequitable" tests/test_equity.py && echo "✓ Test amélioration"
+    expected: "✓ Test amélioration"
+
+  - name: Test Table Sizes Preserved
+    command: grep -q "test_table_sizes_preserved" tests/test_equity.py && echo "✓ Test FR7 préservé"
+    expected: "✓ Test FR7 préservé"
+
+  - name: Type Hints Complete
+    command: grep -q "def enforce_equity(.*) -> Planning:" src/equity.py && echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"
+
+  - name: Docstring Complete
+    command: |
+      grep -q "Garantit équité" src/equity.py && \
+      grep -q "Complexity:" src/equity.py && \
+      echo "✓ Docstring complet"
+    expected: "✓ Docstring complet"

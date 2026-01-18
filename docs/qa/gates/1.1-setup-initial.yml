@@ -1,0 +1,97 @@
+story: 1.1-setup-initial
+description: Setup initial du projet avec Poetry, pytest, black, ruff, mypy
+
+checks:
+  - name: Project Structure
+    command: |
+      test -d src && \
+      test -d tests && \
+      test -d examples && \
+      test -d docs/architecture && \
+      test -d docs/qa/gates && \
+      echo "✓ Structure créée"
+    expected: "✓ Structure créée"
+
+  - name: Pyproject.toml Exists
+    command: test -f pyproject.toml && echo "✓ pyproject.toml présent"
+    expected: "✓ pyproject.toml présent"
+
+  - name: Pyproject.toml Valid
+    command: grep -q "speed-dating-planner" pyproject.toml && echo "✓ Nom projet configuré"
+    expected: "✓ Nom projet configuré"
+
+  - name: Python Version
+    command: grep -q "python.*3.10" pyproject.toml && echo "✓ Python 3.10+"
+    expected: "✓ Python 3.10+"
+
+  - name: Dev Dependencies
+    command: |
+      grep -q "pytest" pyproject.toml && \
+      grep -q "black" pyproject.toml && \
+      grep -q "ruff" pyproject.toml && \
+      grep -q "mypy" pyproject.toml && \
+      echo "✓ Dépendances dev configurées"
+    expected: "✓ Dépendances dev configurées"
+
+  - name: Pytest Configuration
+    command: grep -q "tool.pytest.ini_options" pyproject.toml && echo "✓ Pytest configuré"
+    expected: "✓ Pytest configuré"
+
+  - name: Black Configuration
+    command: grep -q "tool.black" pyproject.toml && echo "✓ Black configuré"
+    expected: "✓ Black configuré"
+
+  - name: Ruff Configuration
+    command: grep -q "tool.ruff" pyproject.toml && echo "✓ Ruff configuré"
+    expected: "✓ Ruff configuré"
+
+  - name: MyPy Configuration
+    command: grep -q "tool.mypy" pyproject.toml && echo "✓ MyPy configuré"
+    expected: "✓ MyPy configuré"
+
+  - name: Gitignore Exists
+    command: test -f .gitignore && echo "✓ .gitignore créé"
+    expected: "✓ .gitignore créé"
+
+  - name: Gitignore Content
+    command: |
+      grep -q "__pycache__" .gitignore && \
+      grep -q ".pytest_cache" .gitignore && \
+      grep -q ".coverage" .gitignore && \
+      echo "✓ .gitignore complet"
+    expected: "✓ .gitignore complet"
+
+  - name: Pre-commit Config Exists
+    command: test -f .pre-commit-config.yaml && echo "✓ Pre-commit configuré"
+    expected: "✓ Pre-commit configuré"
+
+  - name: Pre-commit Hooks
+    command: |
+      grep -q "black" .pre-commit-config.yaml && \
+      grep -q "ruff" .pre-commit-config.yaml && \
+      grep -q "mypy" .pre-commit-config.yaml && \
+      echo "✓ Hooks configurés"
+    expected: "✓ Hooks configurés"
+
+  - name: Coding Standards Doc
+    command: test -f docs/architecture/coding-standards.md && echo "✓ Coding standards documentés"
+    expected: "✓ Coding standards documentés"
+
+  - name: Coding Standards Content
+    command: |
+      grep -q "Python 3.10" docs/architecture/coding-standards.md && \
+      grep -q "Black" docs/architecture/coding-standards.md && \
+      grep -q "MyPy" docs/architecture/coding-standards.md && \
+      echo "✓ Standards complets"
+    expected: "✓ Standards complets"
+
+  - name: Package Init Files
+    command: |
+      test -f src/__init__.py && \
+      test -f tests/__init__.py && \
+      echo "✓ __init__.py créés"
+    expected: "✓ __init__.py créés"
+
+  - name: Console Script Configured
+    command: grep -q "speed-dating-planner.*src.cli:main" pyproject.toml && echo "✓ Console script configuré"
+    expected: "✓ Console script configuré"

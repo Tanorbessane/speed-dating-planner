@@ -1,0 +1,70 @@
+story: 1.3-validation
+description: Validation de configuration avec messages français (NFR10)
+
+checks:
+  - name: Module validation.py Exists
+    command: test -f src/validation.py && echo "✓ src/validation.py créé"
+    expected: "✓ src/validation.py créé"
+
+  - name: InvalidConfigurationError Class
+    command: grep -q "class InvalidConfigurationError" src/validation.py && echo "✓ Exception custom définie"
+    expected: "✓ Exception custom définie"
+
+  - name: validate_config Function
+    command: grep -q "def validate_config" src/validation.py && echo "✓ validate_config() implémentée"
+    expected: "✓ validate_config() implémentée"
+
+  - name: Validation N
+    command: grep -q "config.N < 2" src/validation.py && echo "✓ Validation N présente"
+    expected: "✓ Validation N présente"
+
+  - name: Validation X
+    command: grep -q "config.X < 1" src/validation.py && echo "✓ Validation X présente"
+    expected: "✓ Validation X présente"
+
+  - name: Validation x
+    command: grep -q "config.x < 2" src/validation.py && echo "✓ Validation x présente"
+    expected: "✓ Validation x présente"
+
+  - name: Validation S
+    command: grep -q "config.S < 1" src/validation.py && echo "✓ Validation S présente"
+    expected: "✓ Validation S présente"
+
+  - name: Validation Capacity
+    command: grep -q "total_capacity < config.N" src/validation.py && echo "✓ Validation capacité présente"
+    expected: "✓ Validation capacité présente"
+
+  - name: French Error Messages
+    command: |
+      grep -q "participants insuffisant" src/validation.py && \
+      grep -q "Capacité insuffisante" src/validation.py && \
+      echo "✓ Messages français (NFR10)"
+    expected: "✓ Messages français (NFR10)"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_validation.py && echo "✓ tests/test_validation.py créé"
+    expected: "✓ tests/test_validation.py créé"
+
+  - name: Test Valid Configs
+    command: grep -q "test_valid_config" tests/test_validation.py && echo "✓ Tests configs valides"
+    expected: "✓ Tests configs valides"
+
+  - name: Test Invalid N
+    command: grep -q "test_invalid_n" tests/test_validation.py && echo "✓ Tests N invalide"
+    expected: "✓ Tests N invalide"
+
+  - name: Test Invalid Capacity
+    command: grep -q "test_invalid_total_capacity" tests/test_validation.py && echo "✓ Tests capacité invalide"
+    expected: "✓ Tests capacité invalide"
+
+  - name: Test French Messages
+    command: grep -q "test_error_messages_french" tests/test_validation.py && echo "✓ Tests messages français"
+    expected: "✓ Tests messages français"
+
+  - name: Type Hints Present
+    command: grep -q "def validate_config(config: PlanningConfig) -> None:" src/validation.py && echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"
+
+  - name: Docstring Present
+    command: grep -q '"""Valide une configuration' src/validation.py && echo "✓ Docstring présent"
+    expected: "✓ Docstring présent"

@@ -1,0 +1,87 @@
+story: 3.4-documentation-cli
+description: Documentation complète CLI et formats export dans README
+
+checks:
+  - name: README CLI Section
+    command: grep -q "Via CLI (Interface Ligne de Commande)" README.md && echo "✓ Section CLI présente"
+    expected: "✓ Section CLI présente"
+
+  - name: CLI Examples Present
+    command: grep -q "python -m src.cli" README.md && echo "✓ Exemples CLI documentés"
+    expected: "✓ Exemples CLI documentés"
+
+  - name: Required Arguments Documented
+    command: |
+      grep -q "\-n.*participants" README.md && \
+      grep -q "\-t.*tables" README.md && \
+      grep -q "\-c.*capacity" README.md && \
+      grep -q "\-s.*sessions" README.md && \
+      echo "✓ Arguments requis documentés"
+    expected: "✓ Arguments requis documentés"
+
+  - name: Optional Arguments Documented
+    command: |
+      grep -q "\-o.*output" README.md && \
+      grep -q "\-f.*format" README.md && \
+      grep -q "\-\-seed" README.md && \
+      grep -q "\-v.*verbose" README.md && \
+      echo "✓ Arguments optionnels documentés"
+    expected: "✓ Arguments optionnels documentés"
+
+  - name: Exit Codes Documented
+    command: |
+      grep -q "Exit codes:" README.md && \
+      grep -q "\`0\`.*Succès" README.md && \
+      grep -q "\`1\`.*Configuration invalide" README.md && \
+      grep -q "\`2\`.*Erreur I/O" README.md && \
+      grep -q "\`3\`.*Erreur inattendue" README.md && \
+      echo "✓ Exit codes documentés"
+    expected: "✓ Exit codes documentés"
+
+  - name: Export Formats Section
+    command: grep -q "## 📤 Formats d'Export" README.md && echo "✓ Section formats export"
+    expected: "✓ Section formats export"
+
+  - name: CSV Format Documented
+    command: |
+      grep -q "Format CSV (FR10)" README.md && \
+      grep -q "session_id.*table_id.*participant_id" README.md && \
+      grep -q "UTF-8 BOM" README.md && \
+      echo "✓ Format CSV documenté"
+    expected: "✓ Format CSV documenté"
+
+  - name: JSON Format Documented
+    command: |
+      grep -q "Format JSON (FR11)" README.md && \
+      grep -q '"sessions"' README.md && \
+      grep -q '"metadata"' README.md && \
+      echo "✓ Format JSON documenté"
+    expected: "✓ Format JSON documenté"
+
+  - name: CLI Help Command
+    command: grep -q "python -m src.cli --help" README.md && echo "✓ Commande help documentée"
+    expected: "✓ Commande help documentée"
+
+  - name: Epic 3 Marked Complete
+    command: |
+      grep -q "✅ Epic 3 : Interface Utilisateur (Implémenté)" README.md && \
+      grep -q "\[x\] Export CSV/JSON" README.md && \
+      grep -q "\[x\] Interface CLI" README.md && \
+      echo "✓ Epic 3 marqué implémenté"
+    expected: "✓ Epic 3 marqué implémenté"
+
+  - name: CLI Feature Updated
+    command: grep -q "CLI Intuitive.*complète" README.md && echo "✓ Feature CLI mise à jour"
+    expected: "✓ Feature CLI mise à jour"
+
+  - name: CSV Example Structure
+    command: |
+      grep -A20 "Format CSV" README.md | grep -q "session_id,table_id,participant_id" && \
+      echo "✓ Exemple structure CSV"
+    expected: "✓ Exemple structure CSV"
+
+  - name: JSON Example Structure
+    command: |
+      grep -A15 "Format JSON" README.md | grep -q '"table_id"' && \
+      echo "✓ Exemple structure JSON"
+    expected: "✓ Exemple structure JSON"

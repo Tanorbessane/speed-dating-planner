@@ -1,0 +1,31 @@
+story: 1.6-metrics-calculation
+description: Calcul métriques qualité (FR8-FR9)
+
+checks:
+  - name: Module metrics.py Exists
+    command: test -f src/metrics.py && echo "✓ src/metrics.py créé"
+    expected: "✓ src/metrics.py créé"
+
+  - name: compute_metrics Function
+    command: grep -q "def compute_metrics" src/metrics.py && echo "✓ compute_metrics() implémentée"
+    expected: "✓ compute_metrics() implémentée"
+
+  - name: Uses meeting_history
+    command: grep -q "compute_meeting_history" src/metrics.py && echo "✓ Utilise meeting_history"
+    expected: "✓ Utilise meeting_history"
+
+  - name: Returns PlanningMetrics
+    command: grep -q "-> PlanningMetrics:" src/metrics.py && echo "✓ Retourne PlanningMetrics"
+    expected: "✓ Retourne PlanningMetrics"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_metrics.py && echo "✓ tests/test_metrics.py créé"
+    expected: "✓ tests/test_metrics.py créé"
+
+  - name: Test Repeats
+    command: grep -q "test_planning_with_repeats" tests/test_metrics.py && echo "✓ Test répétitions"
+    expected: "✓ Test répétitions"
+
+  - name: Test Equity
+    command: grep -q "test_inequitable_planning" tests/test_metrics.py && echo "✓ Test équité"
+    expected: "✓ Test équité"

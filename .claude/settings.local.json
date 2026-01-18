@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc:*)",
+      "Bash(poetry --version:*)",
+      "Bash(test:*)",
+      "Bash(find:*)",
+      "Bash(python3 -m src.cli:*)",
+      "Bash(cat:*)",
+      "Bash(pytest:*)",
+      "Bash(poetry run pytest:*)",
+      "Bash(python3 -m pytest:*)",
+      "Bash(poetry add:*)",
+      "Bash(pip3 install:*)",
+      "Bash(python3:*)",
+      "Bash(./venv/bin/pip install:*)",
+      "Bash(./venv/bin/streamlit run:*)",
+      "Bash(curl:*)",
+      "Bash(./venv/bin/pytest tests/test_participants.py -v)",
+      "Bash(./venv/bin/pytest tests/test_participants.py -v --override-ini=\"addopts=\")",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(./venv/bin/pytest tests/test_constraints.py -v)",
+      "Bash(./venv/bin/pytest tests/test_constraints.py -v --override-ini=\"addopts=\")",
+      "Bash(PYTHONPATH=. ./venv/bin/python3:*)",
+      "Bash(PYTHONPATH=. ./venv/bin/streamlit run:*)",
+      "Bash(./venv/bin/pytest tests/test_vip.py -v --override-ini=\"addopts=\")",
+      "Bash(./venv/bin/pytest tests/test_vip.py::TestComputeMetricsVIP::test_compute_metrics_without_participants -v --override-ini=\"addopts=\" --tb=long)",
+      "Bash(./venv/bin/pytest tests/test_display_utils.py -v --override-ini=\"addopts=\")",
+      "Bash(./venv/bin/pytest:*)",
+      "Bash(./venv/bin/pip:*)",
+      "Bash(pip freeze:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

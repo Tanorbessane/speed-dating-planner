@@ -1,0 +1,70 @@
+story: 1.2-structures-donnees
+description: Implémentation des structures de données (PlanningConfig, Session, Planning, PlanningMetrics)
+
+checks:
+  - name: Module models.py Exists
+    command: test -f src/models.py && echo "✓ src/models.py créé"
+    expected: "✓ src/models.py créé"
+
+  - name: PlanningConfig Class
+    command: grep -q "class PlanningConfig" src/models.py && echo "✓ PlanningConfig défini"
+    expected: "✓ PlanningConfig défini"
+
+  - name: PlanningConfig Frozen
+    command: grep -q "@dataclass(frozen=True)" src/models.py && echo "✓ PlanningConfig immutable"
+    expected: "✓ PlanningConfig immutable"
+
+  - name: Session Class
+    command: grep -q "class Session" src/models.py && echo "✓ Session défini"
+    expected: "✓ Session défini"
+
+  - name: Planning Class
+    command: grep -q "class Planning" src/models.py && echo "✓ Planning défini"
+    expected: "✓ Planning défini"
+
+  - name: PlanningMetrics Class
+    command: grep -q "class PlanningMetrics" src/models.py && echo "✓ PlanningMetrics défini"
+    expected: "✓ PlanningMetrics défini"
+
+  - name: Equity Gap Property
+    command: grep -q "def equity_gap" src/models.py && echo "✓ equity_gap property définie"
+    expected: "✓ equity_gap property définie"
+
+  - name: Total Capacity Property
+    command: grep -q "def total_capacity" src/models.py && echo "✓ total_capacity property définie"
+    expected: "✓ total_capacity property définie"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_models.py && echo "✓ tests/test_models.py créé"
+    expected: "✓ tests/test_models.py créé"
+
+  - name: Test PlanningConfig
+    command: grep -q "class TestPlanningConfig" tests/test_models.py && echo "✓ Tests PlanningConfig présents"
+    expected: "✓ Tests PlanningConfig présents"
+
+  - name: Test Session
+    command: grep -q "class TestSession" tests/test_models.py && echo "✓ Tests Session présents"
+    expected: "✓ Tests Session présents"
+
+  - name: Test Planning
+    command: grep -q "class TestPlanning" tests/test_models.py && echo "✓ Tests Planning présents"
+    expected: "✓ Tests Planning présents"
+
+  - name: Test PlanningMetrics
+    command: grep -q "class TestPlanningMetrics" tests/test_models.py && echo "✓ Tests PlanningMetrics présents"
+    expected: "✓ Tests PlanningMetrics présents"
+
+  - name: Type Hints Present
+    command: |
+      grep -q "def total_capacity(self) -> int:" src/models.py && \
+      grep -q "def equity_gap(self) -> int:" src/models.py && \
+      echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"
+
+  - name: Docstrings Present
+    command: |
+      grep -q '"""Configuration immutable' src/models.py && \
+      grep -q '"""Représente une session' src/models.py && \
+      grep -q '"""Planning complet' src/models.py && \
+      echo "✓ Docstrings présents"
+    expected: "✓ Docstrings présents"

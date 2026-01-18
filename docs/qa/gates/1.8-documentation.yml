@@ -1,0 +1,50 @@
+story: 1.8-documentation
+description: Documentation README, exemples, docstrings
+
+checks:
+  - name: README.md Exists
+    command: test -f README.md && echo "✓ README.md créé"
+    expected: "✓ README.md créé"
+
+  - name: README Installation Section
+    command: grep -q "Installation" README.md && echo "✓ Section Installation présente"
+    expected: "✓ Section Installation présente"
+
+  - name: README Usage Section
+    command: grep -q "Utilisation" README.md && echo "✓ Section Utilisation présente"
+    expected: "✓ Section Utilisation présente"
+
+  - name: README Examples
+    command: grep -q "PlanningConfig" README.md && echo "✓ Exemples code présents"
+    expected: "✓ Exemples code présents"
+
+  - name: basic_usage.py Exists
+    command: test -f examples/basic_usage.py && echo "✓ examples/basic_usage.py créé"
+    expected: "✓ examples/basic_usage.py créé"
+
+  - name: basic_usage.py Executable
+    command: grep -q "if __name__" examples/basic_usage.py && echo "✓ Script exécutable"
+    expected: "✓ Script exécutable"
+
+  - name: Docstrings Complete models.py
+    command: |
+      grep -q '"""Configuration immutable' src/models.py && \
+      grep -q '"""Représente une session' src/models.py && \
+      echo "✓ Docstrings models.py"
+    expected: "✓ Docstrings models.py"
+
+  - name: Docstrings Complete baseline.py
+    command: grep -q '"""Génère un planning baseline' src/baseline.py && echo "✓ Docstrings baseline.py"
+    expected: "✓ Docstrings baseline.py"
+
+  - name: Docstrings Complete metrics.py
+    command: grep -q '"""Calcule toutes les métriques' src/metrics.py && echo "✓ Docstrings metrics.py"
+    expected: "✓ Docstrings metrics.py"
+
+  - name: Architecture Link
+    command: grep -q "architecture" README.md && echo "✓ Lien architecture présent"
+    expected: "✓ Lien architecture présent"
+
+  - name: README Mentions CLI
+    command: grep -q "CLI" README.md && echo "✓ Mention CLI à venir"
+    expected: "✓ Mention CLI à venir"

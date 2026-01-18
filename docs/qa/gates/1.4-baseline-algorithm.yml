@@ -1,0 +1,69 @@
+story: 1.4-baseline-algorithm
+description: Algorithme baseline round-robin avec déterminisme (NFR11) et gestion tables partielles (FR7)
+
+checks:
+  - name: Module baseline.py Exists
+    command: test -f src/baseline.py && echo "✓ src/baseline.py créé"
+    expected: "✓ src/baseline.py créé"
+
+  - name: generate_baseline Function
+    command: grep -q "def generate_baseline" src/baseline.py && echo "✓ generate_baseline() implémentée"
+    expected: "✓ generate_baseline() implémentée"
+
+  - name: Seed Parameter
+    command: grep -q "seed: int = 42" src/baseline.py && echo "✓ Seed parameter présent (NFR11)"
+    expected: "✓ Seed parameter présent (NFR11)"
+
+  - name: Random Seed Call
+    command: grep -q "random.seed(seed)" src/baseline.py && echo "✓ random.seed() appelé (déterminisme)"
+    expected: "✓ random.seed() appelé (déterminisme)"
+
+  - name: Stride Coprime
+    command: grep -q "stride.*17" src/baseline.py && echo "✓ Stride coprime implémenté"
+    expected: "✓ Stride coprime implémenté"
+
+  - name: Remainder Handling
+    command: grep -q "remainder" src/baseline.py && echo "✓ Gestion remainder (FR7)"
+    expected: "✓ Gestion remainder (FR7)"
+
+  - name: Validation Call
+    command: grep -q "validate_config(config)" src/baseline.py && echo "✓ Validation appelée"
+    expected: "✓ Validation appelée"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_baseline.py && echo "✓ tests/test_baseline.py créé"
+    expected: "✓ tests/test_baseline.py créé"
+
+  - name: Test Determinism
+    command: grep -q "test_determinism" tests/test_baseline.py && echo "✓ Tests déterminisme présents"
+    expected: "✓ Tests déterminisme présents"
+
+  - name: Test Partial Tables
+    command: grep -q "test_partial_tables" tests/test_baseline.py && echo "✓ Tests tables partielles (FR7)"
+    expected: "✓ Tests tables partielles (FR7)"
+
+  - name: Performance Test Marked
+    command: |
+      grep -q "@pytest.mark.slow" tests/test_baseline.py && \
+      grep -q "test_performance_n100" tests/test_baseline.py && \
+      echo "✓ Tests performance marqués slow"
+    expected: "✓ Tests performance marqués slow"
+
+  - name: Test All Participants Assigned
+    command: grep -q "test_all_participants_assigned" tests/test_baseline.py && echo "✓ Test assignation complète"
+    expected: "✓ Test assignation complète"
+
+  - name: Test Disjoint Tables
+    command: grep -q "test_participants_disjoint" tests/test_baseline.py && echo "✓ Test tables disjointes"
+    expected: "✓ Test tables disjointes"
+
+  - name: Type Hints Complete
+    command: grep -q "def generate_baseline(config: PlanningConfig, seed: int = 42) -> Planning:" src/baseline.py && echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"
+
+  - name: Docstring Complete
+    command: |
+      grep -q '"""Génère un planning baseline' src/baseline.py && \
+      grep -q "Complexity:" src/baseline.py && \
+      echo "✓ Docstring avec complexité"
+    expected: "✓ Docstring avec complexité"

@@ -1,0 +1,51 @@
+story: 3.2-exporteur-json
+description: Exporteur JSON format FR11 avec metadata optionnelle
+
+checks:
+  - name: export_to_json Function
+    command: grep -q "def export_to_json" src/exporters.py && echo "✓ export_to_json() implémentée"
+    expected: "✓ export_to_json() implémentée"
+
+  - name: JSON Structure FR11
+    command: grep -q '"sessions"' src/exporters.py && echo "✓ Structure FR11"
+    expected: "✓ Structure FR11"
+
+  - name: Metadata Optional
+    command: grep -q "include_metadata: bool = True" src/exporters.py && echo "✓ Metadata optionnelle"
+    expected: "✓ Metadata optionnelle"
+
+  - name: JSON Indent
+    command: grep -q "indent=2" src/exporters.py && echo "✓ JSON indenté"
+    expected: "✓ JSON indenté"
+
+  - name: UTF-8 Encoding
+    command: grep -q 'encoding="utf-8"' src/exporters.py && echo "✓ Encodage UTF-8"
+    expected: "✓ Encodage UTF-8"
+
+  - name: Sorted Participants
+    command: grep -q "sorted(list(table))" src/exporters.py && echo "✓ Participants triés"
+    expected: "✓ Participants triés"
+
+  - name: Test Export Success
+    command: grep -A1 "class TestExportToJSON" tests/test_exporters.py | grep -q "Tests pour export_to_json" && echo "✓ Test export JSON"
+    expected: "✓ Test export JSON"
+
+  - name: Test JSON Parsable
+    command: grep -q "test_json_valid_and_parsable" tests/test_exporters.py && echo "✓ Test JSON valide"
+    expected: "✓ Test JSON valide"
+
+  - name: Test Structure FR11
+    command: grep -q "test_structure_fr11_compliant" tests/test_exporters.py && echo "✓ Test structure FR11"
+    expected: "✓ Test structure FR11"
+
+  - name: Test Metadata Included
+    command: grep -q "test_metadata_included" tests/test_exporters.py && echo "✓ Test metadata incluse"
+    expected: "✓ Test metadata incluse"
+
+  - name: Test Metadata Excluded
+    command: grep -q "test_metadata_excluded" tests/test_exporters.py && echo "✓ Test metadata exclue"
+    expected: "✓ Test metadata exclue"
+
+  - name: Type Hints Complete
+    command: grep -A5 "def export_to_json" src/exporters.py | grep -q ") -> None:" && echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"

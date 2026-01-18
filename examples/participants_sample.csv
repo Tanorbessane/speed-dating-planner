@@ -1,0 +1,31 @@
+participant_id,nom,prenom,email,groupe,tags
+0,Dupont,Jean,jean.dupont@example.com,Groupe A,VIP
+1,Martin,Marie,marie.martin@example.com,Groupe A,
+2,Bernard,Luc,luc.bernard@example.com,Groupe B,Speaker
+3,Durand,Sophie,sophie.durand@example.com,,VIP
+4,Petit,Paul,paul.petit@example.com,Groupe B,
+5,Moreau,Alice,alice.moreau@example.com,Groupe A,VIP,Speaker
+6,Laurent,Pierre,,Groupe C,
+7,Simon,Claire,claire.simon@example.com,,
+8,Michel,Thomas,thomas.michel@example.com,Groupe B,
+9,Lefebvre,Emma,emma.lefebvre@example.com,Groupe A,VIP
+10,Leroy,Hugo,,Groupe C,
+11,Roux,Camille,camille.roux@example.com,,Speaker
+12,David,Louis,louis.david@example.com,Groupe B,
+13,Bertrand,Chloé,chloe.bertrand@example.com,Groupe A,
+14,Robert,Lucas,,Groupe C,
+15,Richard,Léa,lea.richard@example.com,,VIP
+16,Dubois,Nathan,nathan.dubois@example.com,Groupe B,
+17,Garcia,Manon,manon.garcia@example.com,Groupe A,Speaker
+18,Fournier,Arthur,,Groupe C,
+19,Girard,Inès,ines.girard@example.com,,
+20,Bonnet,Maxime,maxime.bonnet@example.com,Groupe B,VIP
+21,Morel,Zoé,zoe.morel@example.com,Groupe A,
+22,Fontaine,Gabriel,,Groupe C,Speaker
+23,Rousseau,Lilou,lilou.rousseau@example.com,,
+24,Vincent,Jules,jules.vincent@example.com,Groupe B,
+25,Muller,Sarah,sarah.muller@example.com,Groupe A,VIP
+26,Leclerc,Adam,,Groupe C,
+27,Lambert,Jade,jade.lambert@example.com,,Speaker
+28,Bonnet,Tom,tom.bonnet@example.com,Groupe B,
+29,Barbier,Anna,anna.barbier@example.com,Groupe A,VIP,Speaker

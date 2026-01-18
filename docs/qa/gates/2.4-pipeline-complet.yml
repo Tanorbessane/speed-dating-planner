@@ -1,0 +1,64 @@
+story: 2.4-pipeline-complet
+description: Pipeline complet 3 phases (baseline → improve → enforce_equity)
+
+checks:
+  - name: Module planner.py Exists
+    command: test -f src/planner.py && echo "✓ src/planner.py créé"
+    expected: "✓ src/planner.py créé"
+
+  - name: generate_optimized_planning Function
+    command: grep -q "def generate_optimized_planning" src/planner.py && echo "✓ generate_optimized_planning() implémentée"
+    expected: "✓ generate_optimized_planning() implémentée"
+
+  - name: Calls generate_baseline
+    command: grep -q "generate_baseline" src/planner.py && echo "✓ Phase 1: baseline"
+    expected: "✓ Phase 1: baseline"
+
+  - name: Calls improve_planning
+    command: grep -q "improve_planning" src/planner.py && echo "✓ Phase 2: amélioration"
+    expected: "✓ Phase 2: amélioration"
+
+  - name: Calls enforce_equity
+    command: grep -q "enforce_equity" src/planner.py && echo "✓ Phase 3: équité"
+    expected: "✓ Phase 3: équité"
+
+  - name: Calls validate_config
+    command: grep -q "validate_config" src/planner.py && echo "✓ Validation préalable"
+    expected: "✓ Validation préalable"
+
+  - name: Returns Tuple
+    command: grep -q "Tuple\[Planning, PlanningMetrics\]" src/planner.py && echo "✓ Retourne tuple"
+    expected: "✓ Retourne tuple"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_planner.py && echo "✓ tests/test_planner.py créé"
+    expected: "✓ tests/test_planner.py créé"
+
+  - name: Test End-to-End
+    command: grep -q "test_end_to_end_success" tests/test_planner.py && echo "✓ Test end-to-end"
+    expected: "✓ Test end-to-end"
+
+  - name: Test Guarantees FR6
+    command: grep -q "test_guarantees_equity_fr6" tests/test_planner.py && echo "✓ Test garantie FR6"
+    expected: "✓ Test garantie FR6"
+
+  - name: Test Improves Baseline
+    command: grep -q "test_improves_over_baseline" tests/test_planner.py && echo "✓ Test amélioration vs baseline"
+    expected: "✓ Test amélioration vs baseline"
+
+  - name: Test Determinism
+    command: grep -q "test_determinism_same_seed" tests/test_planner.py && echo "✓ Test déterminisme (NFR11)"
+    expected: "✓ Test déterminisme (NFR11)"
+
+  - name: Type Hints Complete
+    command: grep -q "seed: int = 42) -> Tuple\[Planning, PlanningMetrics\]:" src/planner.py && echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"
+
+  - name: Docstring Complete
+    command: |
+      grep -q "Pipeline:" src/planner.py && \
+      grep -q "Phase 1" src/planner.py && \
+      grep -q "Phase 2" src/planner.py && \
+      grep -q "Phase 3" src/planner.py && \
+      echo "✓ Docstring 3 phases"
+    expected: "✓ Docstring 3 phases"

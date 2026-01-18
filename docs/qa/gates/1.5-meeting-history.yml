@@ -1,0 +1,35 @@
+story: 1.5-meeting-history
+description: Calcul historique rencontres (primitive pour métriques)
+
+checks:
+  - name: Module meeting_history.py Exists
+    command: test -f src/meeting_history.py && echo "✓ src/meeting_history.py créé"
+    expected: "✓ src/meeting_history.py créé"
+
+  - name: compute_meeting_history Function
+    command: grep -q "def compute_meeting_history" src/meeting_history.py && echo "✓ compute_meeting_history() implémentée"
+    expected: "✓ compute_meeting_history() implémentée"
+
+  - name: Pair Normalization
+    command: grep -q "min(p1, p2), max(p1, p2)" src/meeting_history.py && echo "✓ Normalisation paires"
+    expected: "✓ Normalisation paires"
+
+  - name: Complexity Documented
+    command: grep -q "O(S × X × x²)" src/meeting_history.py && echo "✓ Complexité documentée"
+    expected: "✓ Complexité documentée"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_meeting_history.py && echo "✓ tests/test_meeting_history.py créé"
+    expected: "✓ tests/test_meeting_history.py créé"
+
+  - name: Test Normalization
+    command: grep -q "test_pair_normalization" tests/test_meeting_history.py && echo "✓ Test normalisation"
+    expected: "✓ Test normalisation"
+
+  - name: Test Variable Sizes
+    command: grep -q "test_variable_table_sizes" tests/test_meeting_history.py && echo "✓ Test tables variables (FR7)"
+    expected: "✓ Test tables variables (FR7)"
+
+  - name: Type Hints Complete
+    command: grep -q "def compute_meeting_history(planning: Planning) -> Set\[Tuple\[int, int\]\]:" src/meeting_history.py && echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"

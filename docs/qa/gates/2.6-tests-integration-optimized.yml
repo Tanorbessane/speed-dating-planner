@@ -1,0 +1,26 @@
+story: 2.6-tests-integration-optimized
+description: Tests intégration pipeline optimisé + régression baseline vs optimisé
+
+checks:
+  - name: Integration Tests Exist
+    command: test -f tests/test_integration_optimized.py && echo "✓ tests/test_integration_optimized.py créé"
+    expected: "✓ tests/test_integration_optimized.py créé"
+
+  - name: Test End-to-End Optimized
+    command: grep -q "test_end_to_end_optimized_success" tests/test_integration_optimized.py && echo "✓ Test end-to-end optimisé"
+    expected: "✓ Test end-to-end optimisé"
+
+  - name: Test Regression Repeats
+    command: grep -q "test_regression_optimized_reduces_repeats" tests/test_integration_optimized.py && echo "✓ Test régression répétitions"
+    expected: "✓ Test régression répétitions"
+
+  - name: Test Regression Equity
+    command: grep -q "test_regression_equity_improved" tests/test_integration_optimized.py && echo "✓ Test régression équité"
+    expected: "✓ Test régression équité"
+
+  - name: Test Examples A and B
+    command: |
+      grep -q "test_example_a_optimized" tests/test_integration_optimized.py && \
+      grep -q "test_example_b_optimized" tests/test_integration_optimized.py && \
+      echo "✓ Tests exemples PRD"
+    expected: "✓ Tests exemples PRD"

@@ -1,0 +1,35 @@
+story: 2.7-documentation-optimization
+description: Documentation pipeline optimisé (README + advanced_usage.py)
+
+checks:
+  - name: advanced_usage.py Exists
+    command: test -f examples/advanced_usage.py && echo "✓ examples/advanced_usage.py créé"
+    expected: "✓ examples/advanced_usage.py créé"
+
+  - name: advanced_usage Executable
+    command: grep -q "if __name__" examples/advanced_usage.py && echo "✓ Script exécutable"
+    expected: "✓ Script exécutable"
+
+  - name: advanced_usage Compares
+    command: grep -q "BASELINE vs OPTIMISÉ" examples/advanced_usage.py && echo "✓ Comparaison baseline vs optimisé"
+    expected: "✓ Comparaison baseline vs optimisé"
+
+  - name: README Updated
+    command: grep -q "generate_optimized_planning" README.md && echo "✓ README mentionné pipeline optimisé"
+    expected: "✓ README mentionné pipeline optimisé"
+
+  - name: README How It Works
+    command: grep -q "Comment ça marche" README.md && echo "✓ Section 'Comment ça marche'"
+    expected: "✓ Section 'Comment ça marche'"
+
+  - name: README 3 Phases
+    command: |
+      grep -q "Phase 1" README.md && \
+      grep -q "Phase 2" README.md && \
+      grep -q "Phase 3" README.md && \
+      echo "✓ Pipeline 3 phases documenté"
+    expected: "✓ Pipeline 3 phases documenté"
+
+  - name: README Epic 2 Complete
+    command: grep -q "Epic 2 : Optimisation (Implémenté)" README.md && echo "✓ Epic 2 marqué implémenté"
+    expected: "✓ Epic 2 marqué implémenté"

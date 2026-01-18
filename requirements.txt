@@ -1,0 +1,18 @@
+# Core dependencies for Speed Dating Planner
+streamlit==1.52.2
+pandas==2.3.3
+numpy==2.4.1
+
+# Visualization
+plotly==6.5.1
+
+# PDF Export
+reportlab==4.4.9
+kaleido==1.2.0
+pillow==12.1.0
+
+# Excel support
+openpyxl==3.1.5
+
+# Additional dependencies
+python-dateutil==2.9.0.post0

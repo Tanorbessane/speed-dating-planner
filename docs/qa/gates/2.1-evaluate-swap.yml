@@ -1,0 +1,68 @@
+story: 2.1-evaluate-swap
+description: Primitive pure d'évaluation de swaps (O(x))
+
+checks:
+  - name: Module swap_evaluation.py Exists
+    command: test -f src/swap_evaluation.py && echo "✓ src/swap_evaluation.py créé"
+    expected: "✓ src/swap_evaluation.py créé"
+
+  - name: evaluate_swap Function
+    command: grep -q "def evaluate_swap" src/swap_evaluation.py && echo "✓ evaluate_swap() implémentée"
+    expected: "✓ evaluate_swap() implémentée"
+
+  - name: Pure Function Note
+    command: grep -q "fonction pure" src/swap_evaluation.py && echo "✓ Fonction pure documentée"
+    expected: "✓ Fonction pure documentée"
+
+  - name: Returns Int Delta
+    command: grep -q ") -> int:" src/swap_evaluation.py && echo "✓ Retourne int (delta)"
+    expected: "✓ Retourne int (delta)"
+
+  - name: Complexity Documented
+    command: grep -q "O(x)" src/swap_evaluation.py && echo "✓ Complexité O(x) documentée"
+    expected: "✓ Complexité O(x) documentée"
+
+  - name: Validation p1 in table1
+    command: grep -q "p1 not in table1" src/swap_evaluation.py && echo "✓ Validation p1 présente"
+    expected: "✓ Validation p1 présente"
+
+  - name: Validation p2 in table2
+    command: grep -q "p2 not in table2" src/swap_evaluation.py && echo "✓ Validation p2 présente"
+    expected: "✓ Validation p2 présente"
+
+  - name: Unit Tests Exist
+    command: test -f tests/test_swap_evaluation.py && echo "✓ tests/test_swap_evaluation.py créé"
+    expected: "✓ tests/test_swap_evaluation.py créé"
+
+  - name: Test Beneficial Swap
+    command: grep -q "test_swap_reduces_repeats" tests/test_swap_evaluation.py && echo "✓ Test swap bénéfique"
+    expected: "✓ Test swap bénéfique"
+
+  - name: Test Harmful Swap
+    command: grep -q "test_swap_increases_repeats" tests/test_swap_evaluation.py && echo "✓ Test swap néfaste"
+    expected: "✓ Test swap néfaste"
+
+  - name: Test Neutral Swap
+    command: grep -q "test_swap_neutral" tests/test_swap_evaluation.py && echo "✓ Test swap neutre"
+    expected: "✓ Test swap neutre"
+
+  - name: Test Pure Function
+    command: grep -q "test_function_is_pure" tests/test_swap_evaluation.py && echo "✓ Test pureté fonction"
+    expected: "✓ Test pureté fonction"
+
+  - name: Test Invalid Participants
+    command: grep -q "test_invalid_participant" tests/test_swap_evaluation.py && echo "✓ Tests validation participants"
+    expected: "✓ Tests validation participants"
+
+  - name: Type Hints Complete
+    command: |
+      grep -q "met_pairs: Set\[Tuple\[int, int\]\]" src/swap_evaluation.py && \
+      echo "✓ Type hints complets"
+    expected: "✓ Type hints complets"
+
+  - name: Docstring Complete
+    command: |
+      grep -q "Évalue l'impact d'un swap" src/swap_evaluation.py && \
+      grep -q "Complexity:" src/swap_evaluation.py && \
+      echo "✓ Docstring complet avec complexité"
+    expected: "✓ Docstring complet avec complexité"
