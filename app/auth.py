@@ -66,6 +66,34 @@ class AuthManager:
         conn.commit()
         conn.close()
 
+        # Migrer la base de données si nécessaire
+        self._migrate_database()
+
+    def _migrate_database(self):
+        """Appliquer les migrations nécessaires à la base de données."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        try:
+            # Vérifier si les colonnes reset_token existent
+            cursor.execute("PRAGMA table_info(users)")
+            columns = [column[1] for column in cursor.fetchall()]
+
+            # Ajouter reset_token si manquante
+            if 'reset_token' not in columns:
+                cursor.execute("ALTER TABLE users ADD COLUMN reset_token TEXT")
+
+            # Ajouter reset_token_expires si manquante
+            if 'reset_token_expires' not in columns:
+                cursor.execute("ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMP")
+
+            conn.commit()
+        except Exception as e:
+            # Silent fail - les colonnes existent probablement déjà
+            pass
+        finally:
+            conn.close()
+
     @staticmethod
     def _hash_password(password: str) -> str:
         """Hasher un mot de passe avec SHA-256.
