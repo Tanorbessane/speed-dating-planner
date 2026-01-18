@@ -631,59 +631,60 @@ def login_page():
     with tab3:
         st.markdown("### Réinitialiser votre mot de passe")
 
-        # Étape 1 : Demander email et générer token
-        with st.form("reset_request_form"):
-            st.info("Entrez votre email pour recevoir un code de réinitialisation")
+        st.info("💡 **Processus en 2 étapes** : Générez un code puis réinitialisez votre mot de passe")
 
-            email = st.text_input("📧 Email", placeholder="votre@email.com", key="reset_email")
-            submit_request = st.form_submit_button("📧 Envoyer le Code", use_container_width=True, type="primary")
+        # Formulaire tout-en-un pour éviter les problèmes de session_state
+        with st.form("reset_password_complete_form"):
+            st.markdown("**Étape 1 : Générer le code**")
 
-            if submit_request:
-                if not email:
+            email_reset = st.text_input("📧 Email", placeholder="votre@email.com", key="reset_email_input")
+
+            if st.form_submit_button("📧 Générer le Code", use_container_width=True):
+                if not email_reset:
                     st.error("❌ Veuillez entrer votre email")
                 else:
-                    success, message = auth_manager.generate_reset_token(email)
+                    success, message = auth_manager.generate_reset_token(email_reset)
                     if success:
                         st.success(message)
-                        st.session_state.reset_email = email
+                        st.info("👇 Une fois le code reçu, utilisez le formulaire ci-dessous")
                     else:
                         st.error(message)
 
         st.divider()
 
-        # Étape 2 : Entrer token et nouveau mot de passe
-        if "reset_email" in st.session_state:
-            with st.form("reset_password_form"):
-                st.markdown("**Réinitialisez votre mot de passe**")
+        # Deuxième formulaire pour réinitialiser avec le code
+        with st.form("reset_password_with_token_form"):
+            st.markdown("**Étape 2 : Réinitialiser avec le code**")
 
-                token = st.text_input("🔢 Code de réinitialisation", placeholder="123456", max_chars=6, key="reset_token")
+            email_for_reset = st.text_input("📧 Votre email", placeholder="Même email qu'étape 1", key="reset_email_confirm")
+            token = st.text_input("🔢 Code de réinitialisation (6 chiffres)", placeholder="123456", max_chars=6, key="reset_token_input")
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    new_password = st.text_input("🔒 Nouveau mot de passe", type="password", placeholder="Min. 6 caractères", key="reset_new_password")
-                with col2:
-                    new_password_confirm = st.text_input("🔒 Confirmer", type="password", placeholder="Même mot de passe", key="reset_new_password_confirm")
+            col1, col2 = st.columns(2)
+            with col1:
+                new_password = st.text_input("🔒 Nouveau mot de passe", type="password", placeholder="Min. 6 caractères", key="reset_new_password")
+            with col2:
+                new_password_confirm = st.text_input("🔒 Confirmer", type="password", placeholder="Même mot de passe", key="reset_new_password_confirm")
 
-                submit_reset = st.form_submit_button("✅ Réinitialiser", use_container_width=True, type="primary")
+            submit_reset = st.form_submit_button("✅ Réinitialiser le Mot de Passe", use_container_width=True, type="primary")
 
-                if submit_reset:
-                    if not token or not new_password:
-                        st.error("❌ Tous les champs sont obligatoires")
-                    elif new_password != new_password_confirm:
-                        st.error("❌ Les mots de passe ne correspondent pas")
+            if submit_reset:
+                if not email_for_reset or not token or not new_password:
+                    st.error("❌ Tous les champs sont obligatoires")
+                elif new_password != new_password_confirm:
+                    st.error("❌ Les mots de passe ne correspondent pas")
+                else:
+                    success, message = auth_manager.reset_password(
+                        email_for_reset,
+                        token,
+                        new_password
+                    )
+
+                    if success:
+                        st.success(message)
+                        st.success("🎉 Vous pouvez maintenant vous connecter avec votre nouveau mot de passe !")
+                        st.info("👈 Utilisez l'onglet **🔑 Connexion**")
                     else:
-                        success, message = auth_manager.reset_password(
-                            st.session_state.reset_email,
-                            token,
-                            new_password
-                        )
-
-                        if success:
-                            st.success(message)
-                            del st.session_state.reset_email
-                            st.info("Vous pouvez maintenant vous connecter avec votre nouveau mot de passe")
-                        else:
-                            st.error(message)
+                        st.error(message)
 
 
 def logout():
