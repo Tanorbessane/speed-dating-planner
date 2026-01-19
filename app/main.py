@@ -15,8 +15,9 @@ sys.path.insert(0, str(project_root))
 
 import streamlit as st
 
-# Import authentification
+# Import authentification et stripe
 from auth import init_session_state, show_user_info, require_auth
+from stripe_integration import retrieve_checkout_session
 
 # Configuration de la page
 st.set_page_config(
@@ -36,6 +37,64 @@ if not st.session_state.authenticated:
 else:
     # Afficher les infos utilisateur dans la sidebar
     show_user_info()
+
+# ===== VÉRIFIER SI PAIEMENT RÉUSSI =====
+query_params = st.query_params
+session_id = query_params.get("session_id", None)
+
+if session_id and st.session_state.authenticated:
+    # Afficher confirmation de paiement
+    st.balloons()
+
+    st.markdown("""
+    <div style='background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 30px; border-radius: 15px; color: white; text-align: center; margin-bottom: 30px;'>
+        <h1 style='font-size: 3rem; margin: 0;'>🎉</h1>
+        <h2 style='margin: 20px 0 10px 0;'>Paiement Réussi !</h2>
+        <p style='font-size: 1.2rem; margin: 0;'>Votre abonnement a été activé</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Récupérer les détails
+    session_details = retrieve_checkout_session(session_id)
+
+    if session_details:
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.success(f"""
+            **📧 Email de confirmation**
+
+            {session_details.get('customer_email', 'N/A')}
+            """)
+
+        with col2:
+            tier = session_details.get('metadata', {}).get('tier', 'N/A').upper()
+            st.success(f"""
+            **📦 Plan activé**
+
+            {tier}
+            """)
+
+    st.warning("""
+    ⏳ **Activation de votre compte**
+
+    Votre plan sera activé automatiquement dans les prochaines minutes.
+    Vous pouvez déjà commencer à créer des plannings !
+    """)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("🏠 Continuer", type="primary", use_container_width=True):
+            st.query_params.clear()
+            st.rerun()
+
+    with col2:
+        if st.button("🎯 Créer un Planning", use_container_width=True):
+            st.query_params.clear()
+            st.switch_page("pages/2_⚙️_Configuration.py")
+
+    st.stop()  # Ne pas afficher le reste de la page d'accueil
 
 # CSS personnalisé pour un design moderne
 st.markdown("""

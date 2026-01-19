@@ -94,7 +94,7 @@ with col2:
                 user_email = st.session_state.user['email']
 
                 # URLs de retour
-                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Dashboard"
+                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app"
                 cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
 
                 with st.spinner("Création de la session de paiement..."):
@@ -153,7 +153,7 @@ with col3:
                 user_email = st.session_state.user['email']
 
                 # URLs de retour
-                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Dashboard"
+                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app"
                 cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
 
                 with st.spinner("Création de la session de paiement..."):
