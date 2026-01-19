@@ -9,10 +9,11 @@ sys.path.insert(0, str(project_root))
 
 import streamlit as st
 
-# Importer auth
+# Importer auth et stripe
 import sys
 sys.path.append(str(Path(__file__).parent.parent))
 from auth import require_auth, init_session_state, show_user_info
+from stripe_integration import create_checkout_session
 
 st.set_page_config(page_title="Pricing", page_icon="💳", layout="wide")
 
@@ -88,11 +89,32 @@ with col2:
         if st.session_state.user['tier'] == 'pro':
             st.success("✅ Votre plan actuel")
         elif st.session_state.user['tier'] == 'free':
-            if st.button("⬆️ Upgrade vers Pro", key="upgrade_pro", type="primary", use_container_width=True):
-                st.info("🔜 Intégration Stripe en cours. Contactez-nous : support@speeddating-planner.com")
+            if st.button("⬆️ Upgrade vers Pro - 29€/mois", key="upgrade_pro", type="primary", use_container_width=True):
+                # Créer session de paiement Stripe
+                user_email = st.session_state.user['email']
+
+                # URLs de retour
+                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Paiement_Réussi"
+                cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
+
+                with st.spinner("Redirection vers le paiement sécurisé..."):
+                    success, checkout_url, error = create_checkout_session(
+                        user_email=user_email,
+                        tier="pro",
+                        success_url=success_url,
+                        cancel_url=cancel_url
+                    )
+
+                    if success and checkout_url:
+                        st.success("✅ Redirection vers Stripe...")
+                        st.markdown(f'<meta http-equiv="refresh" content="0;url={checkout_url}">', unsafe_allow_html=True)
+                        st.link_button("🔒 Cliquez ici si la redirection ne fonctionne pas", checkout_url)
+                    else:
+                        st.error(f"❌ {error}")
+                        st.info("Contactez le support : support@speeddating-planner.com")
         elif st.session_state.user['tier'] == 'business':
             if st.button("⬇️ Downgrade vers Pro", key="downgrade_pro", use_container_width=True):
-                st.warning("Contactez le support pour downgrader")
+                st.warning("Contactez le support pour downgrader : support@speeddating-planner.com")
     else:
         st.button("Essai 14 Jours Gratuit", type="primary", use_container_width=True, disabled=True)
         st.caption("Créez un compte pour commencer")
@@ -120,8 +142,29 @@ with col3:
         if st.session_state.user['tier'] == 'business':
             st.success("✅ Votre plan actuel")
         else:
-            if st.button("💎 Contacter Sales", key="contact_business", use_container_width=True):
-                st.info("📧 Email : sales@speeddating-planner.com")
+            if st.button("💎 Upgrade vers Business - 99€/mois", key="upgrade_business", type="primary", use_container_width=True):
+                # Créer session de paiement Stripe
+                user_email = st.session_state.user['email']
+
+                # URLs de retour
+                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Paiement_Réussi"
+                cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
+
+                with st.spinner("Redirection vers le paiement sécurisé..."):
+                    success, checkout_url, error = create_checkout_session(
+                        user_email=user_email,
+                        tier="business",
+                        success_url=success_url,
+                        cancel_url=cancel_url
+                    )
+
+                    if success and checkout_url:
+                        st.success("✅ Redirection vers Stripe...")
+                        st.markdown(f'<meta http-equiv="refresh" content="0;url={checkout_url}">', unsafe_allow_html=True)
+                        st.link_button("🔒 Cliquez ici si la redirection ne fonctionne pas", checkout_url)
+                    else:
+                        st.error(f"❌ {error}")
+                        st.info("Contactez le support : support@speeddating-planner.com")
     else:
         st.button("Contacter Sales", use_container_width=True, disabled=True)
         st.caption("Créez un compte pour commencer")
