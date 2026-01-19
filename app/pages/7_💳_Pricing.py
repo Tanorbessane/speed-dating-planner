@@ -97,7 +97,7 @@ with col2:
                 success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/_paiement_reussi"
                 cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
 
-                with st.spinner("Redirection vers le paiement sécurisé..."):
+                with st.spinner("Création de la session de paiement..."):
                     success, checkout_url, error = create_checkout_session(
                         user_email=user_email,
                         tier="pro",
@@ -106,9 +106,15 @@ with col2:
                     )
 
                     if success and checkout_url:
-                        st.success("✅ Redirection vers Stripe...")
-                        st.markdown(f'<meta http-equiv="refresh" content="0;url={checkout_url}">', unsafe_allow_html=True)
-                        st.link_button("🔒 Cliquez ici si la redirection ne fonctionne pas", checkout_url)
+                        st.success("✅ Session de paiement créée !")
+                        st.info("👇 Cliquez sur le bouton ci-dessous pour accéder au paiement sécurisé Stripe")
+                        st.link_button(
+                            "🔒 Procéder au Paiement Sécurisé (Stripe)",
+                            checkout_url,
+                            type="primary",
+                            use_container_width=True
+                        )
+                        st.caption("Vous serez redirigé vers la page de paiement sécurisée de Stripe")
                     else:
                         st.error(f"❌ {error}")
                         st.info("Contactez le support : support@speeddating-planner.com")
@@ -150,7 +156,7 @@ with col3:
                 success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/_paiement_reussi"
                 cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
 
-                with st.spinner("Redirection vers le paiement sécurisé..."):
+                with st.spinner("Création de la session de paiement..."):
                     success, checkout_url, error = create_checkout_session(
                         user_email=user_email,
                         tier="business",
@@ -159,9 +165,15 @@ with col3:
                     )
 
                     if success and checkout_url:
-                        st.success("✅ Redirection vers Stripe...")
-                        st.markdown(f'<meta http-equiv="refresh" content="0;url={checkout_url}">', unsafe_allow_html=True)
-                        st.link_button("🔒 Cliquez ici si la redirection ne fonctionne pas", checkout_url)
+                        st.success("✅ Session de paiement créée !")
+                        st.info("👇 Cliquez sur le bouton ci-dessous pour accéder au paiement sécurisé Stripe")
+                        st.link_button(
+                            "🔒 Procéder au Paiement Sécurisé (Stripe)",
+                            checkout_url,
+                            type="primary",
+                            use_container_width=True
+                        )
+                        st.caption("Vous serez redirigé vers la page de paiement sécurisée de Stripe")
                     else:
                         st.error(f"❌ {error}")
                         st.info("Contactez le support : support@speeddating-planner.com")
