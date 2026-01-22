@@ -30,20 +30,14 @@ st.set_page_config(
 # Initialiser la session d'authentification
 init_session_state()
 
-# Vérifier authentification (optionnel pour page d'accueil, mais affiche login)
-if not st.session_state.authenticated:
-    # Page d'accueil publique + option de login
-    pass
-else:
-    # Afficher les infos utilisateur dans la sidebar
-    show_user_info()
-
-# ===== VÉRIFIER SI PAIEMENT RÉUSSI =====
+# ===== VÉRIFIER SI PAIEMENT RÉUSSI (AVANT AUTH) =====
+# Important: Vérifier le paiement AVANT l'authentification car la session
+# peut être perdue lors du redirect depuis Stripe
 query_params = st.query_params
 session_id = query_params.get("session_id", None)
 
-if session_id and st.session_state.authenticated:
-    # Afficher confirmation de paiement
+if session_id:
+    # Afficher confirmation de paiement (même si non authentifié)
     st.balloons()
 
     st.markdown("""
@@ -54,7 +48,7 @@ if session_id and st.session_state.authenticated:
     </div>
     """, unsafe_allow_html=True)
 
-    # Récupérer les détails
+    # Récupérer les détails du paiement depuis Stripe
     session_details = retrieve_checkout_session(session_id)
 
     if session_details:
@@ -75,12 +69,25 @@ if session_id and st.session_state.authenticated:
             {tier}
             """)
 
-    st.warning("""
-    ⏳ **Activation de votre compte**
+        st.success("""
+        ✅ **Paiement confirmé par Stripe**
 
-    Votre plan sera activé automatiquement dans les prochaines minutes.
-    Vous pouvez déjà commencer à créer des plannings !
-    """)
+        Votre abonnement est actif et votre compte sera mis à jour automatiquement.
+        """)
+    else:
+        st.warning("""
+        ⚠️ **Paiement en cours de traitement**
+
+        Nous avons bien reçu votre paiement. Votre compte sera activé dans quelques instants.
+        """)
+
+    # Si l'utilisateur n'est pas connecté, lui demander de se connecter
+    if not st.session_state.authenticated:
+        st.info("""
+        👋 **Connectez-vous pour accéder à votre compte**
+
+        Utilisez l'email avec lequel vous avez effectué le paiement pour vous connecter.
+        """)
 
     col1, col2 = st.columns(2)
 
@@ -95,6 +102,14 @@ if session_id and st.session_state.authenticated:
             st.switch_page("pages/2_⚙️_Configuration.py")
 
     st.stop()  # Ne pas afficher le reste de la page d'accueil
+
+# Vérifier authentification (optionnel pour page d'accueil, mais affiche login)
+if not st.session_state.authenticated:
+    # Page d'accueil publique + option de login
+    pass
+else:
+    # Afficher les infos utilisateur dans la sidebar
+    show_user_info()
 
 # CSS personnalisé pour un design moderne
 st.markdown("""

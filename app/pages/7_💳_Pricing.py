@@ -93,8 +93,8 @@ with col2:
                 # Créer session de paiement Stripe
                 user_email = st.session_state.user['email']
 
-                # URLs de retour
-                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app"
+                # URLs de retour (avec trailing slash pour éviter les problèmes de redirect)
+                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/"
                 cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
 
                 with st.spinner("Création de la session de paiement..."):
@@ -152,8 +152,8 @@ with col3:
                 # Créer session de paiement Stripe
                 user_email = st.session_state.user['email']
 
-                # URLs de retour
-                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app"
+                # URLs de retour (avec trailing slash pour éviter les problèmes de redirect)
+                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/"
                 cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
 
                 with st.spinner("Création de la session de paiement..."):
