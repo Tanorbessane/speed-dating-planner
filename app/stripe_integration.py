@@ -3,26 +3,126 @@
 Gestion des checkout sessions, webhooks et mise à jour des tiers utilisateurs.
 """
 
+import logging
+import os
 import stripe
 import streamlit as st
 from typing import Optional, Tuple
 
+logger = logging.getLogger(__name__)
 
-def init_stripe():
-    """Initialiser Stripe avec les clés API depuis secrets."""
+
+def init_stripe() -> bool:
+    """Initialiser Stripe avec les clés API depuis secrets ou environment variables.
+
+    Ordre de priorité:
+    1. Streamlit secrets (.streamlit/secrets.toml) - RECOMMANDÉ pour Streamlit
+    2. Variables d'environnement (.env) - Fallback pour déploiements non-Streamlit
+
+    Returns:
+        True si initialisation réussie, False sinon
+
+    Note:
+        Voir .streamlit/secrets.toml.example pour la configuration des secrets.
+    """
     try:
-        stripe.api_key = st.secrets["stripe"]["secret_key"]
+        # Essayer d'abord Streamlit secrets (préféré)
+        secret_key = st.secrets["stripe"]["secret_key"]
+
+        # Validation format clé secrète
+        if not secret_key or not secret_key.startswith(("sk_test_", "sk_live_")):
+            logger.error(
+                "Clé Stripe invalide : doit commencer par 'sk_test_' (test) "
+                "ou 'sk_live_' (production)"
+            )
+            st.error("""
+            ❌ **Configuration Stripe invalide**
+
+            La clé secrète doit commencer par `sk_test_` (mode test) ou `sk_live_` (production).
+
+            Voir `.streamlit/secrets.toml.example` pour la configuration.
+            """)
+            return False
+
+        stripe.api_key = secret_key
+
+        # Log du mode (test ou live) sans exposer la clé
+        mode = "TEST" if secret_key.startswith("sk_test_") else "LIVE"
+        logger.info(f"Stripe initialisé en mode {mode}")
+
         return True
+
+    except KeyError:
+        # Fallback sur variables d'environnement
+        secret_key = os.getenv("STRIPE_SECRET_KEY")
+
+        if not secret_key:
+            logger.error(
+                "Configuration Stripe manquante : aucune clé trouvée dans "
+                "st.secrets['stripe']['secret_key'] ni STRIPE_SECRET_KEY"
+            )
+            st.error("""
+            ❌ **Configuration Stripe manquante**
+
+            Veuillez configurer vos clés API Stripe :
+
+            **Option 1 (Recommandé pour Streamlit):**
+            - Créer `.streamlit/secrets.toml` à partir de `.streamlit/secrets.toml.example`
+            - Ajouter vos clés Stripe dans la section `[stripe]`
+
+            **Option 2 (Déploiement non-Streamlit):**
+            - Définir la variable d'environnement `STRIPE_SECRET_KEY`
+
+            **Pour obtenir vos clés:**
+            - Aller sur https://dashboard.stripe.com/apikeys
+            - Utiliser les clés TEST pour développement (sk_test_...)
+            """)
+            return False
+
+        stripe.api_key = secret_key
+        mode = "TEST" if secret_key.startswith("sk_test_") else "LIVE"
+        logger.info(f"Stripe initialisé depuis env vars en mode {mode}")
+        return True
+
     except Exception as e:
-        st.error(f"❌ Erreur configuration Stripe : {str(e)}")
+        logger.exception("Erreur inattendue lors de l'initialisation Stripe")
+        st.error(f"""
+        ❌ **Erreur inattendue lors de la configuration Stripe**
+
+        {str(e)}
+
+        Veuillez vérifier votre configuration dans `.streamlit/secrets.toml`.
+        """)
         return False
 
 
 def get_publishable_key() -> Optional[str]:
-    """Récupérer la clé publique Stripe."""
+    """Récupérer la clé publique Stripe.
+
+    Returns:
+        Clé publique (pk_test_... ou pk_live_...) ou None si non trouvée
+    """
     try:
-        return st.secrets["stripe"]["publishable_key"]
-    except Exception:
+        key = st.secrets["stripe"]["publishable_key"]
+
+        # Validation format
+        if key and not key.startswith(("pk_test_", "pk_live_")):
+            logger.warning(
+                "Clé publique Stripe invalide : doit commencer par 'pk_test_' ou 'pk_live_'"
+            )
+            return None
+
+        return key
+
+    except KeyError:
+        # Fallback environment variable
+        key = os.getenv("STRIPE_PUBLISHABLE_KEY")
+        if not key:
+            logger.warning("Clé publique Stripe non trouvée")
+        return key
+
+    except Exception as e:
+        logger.error(f"Erreur récupération clé publique : {e}")
         return None
 
 

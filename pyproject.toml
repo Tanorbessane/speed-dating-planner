@@ -8,6 +8,67 @@ packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+# Core algorithm dependencies (stdlib-only, minimal)
+# Note: Core algorithm (src/{baseline,improvement,equity,models,validation,metrics}.py)
+# fonctionne avec stdlib Python uniquement sans dépendances externes.
+
+# CLI dependencies (minimal)
+python-dateutil = {version = "^2.9.0", optional = true}
+
+# Streamlit UI dependencies
+streamlit = {version = "^1.52.0", optional = true}
+pandas = {version = "^2.3.0", optional = true}
+numpy = {version = "^2.4.0", optional = true}
+
+# Visualization dependencies
+plotly = {version = "^6.5.0", optional = true}
+
+# PDF export dependencies
+reportlab = {version = "^4.4.0", optional = true}
+kaleido = {version = "^1.2.0", optional = true}
+pillow = {version = "^12.1.0", optional = true}
+
+# Excel support
+openpyxl = {version = "^3.1.0", optional = true}
+
+# Payment processing
+stripe = {version = "^11.3.0", optional = true}
+
+[tool.poetry.extras]
+# Installation modes (Poetry extras)
+# Usage: pip install -e ".[MODE]"
+
+# Mode CLI: Core algorithm + CLI interface (lightweight)
+cli = ["python-dateutil"]
+
+# Mode Streamlit: Interface web complète (sans PDF/payments)
+streamlit = ["streamlit", "pandas", "numpy", "plotly", "python-dateutil"]
+
+# Mode PDF: Export PDF professionnel
+pdf = ["reportlab", "kaleido", "pillow"]
+
+# Mode Excel: Import/export Excel
+excel = ["openpyxl"]
+
+# Mode Payments: Intégration Stripe
+payments = ["stripe"]
+
+# Mode Visualizations: Graphiques et heatmap
+viz = ["plotly", "pandas", "numpy"]
+
+# Mode Full: Toutes les fonctionnalités (production)
+all = [
+    "streamlit",
+    "pandas",
+    "numpy",
+    "plotly",
+    "reportlab",
+    "kaleido",
+    "pillow",
+    "openpyxl",
+    "stripe",
+    "python-dateutil"
+]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

@@ -1,6 +1,8 @@
 """Page Participants - Import et gestion CSV/Excel."""
 
+import logging
 import sys
+import traceback
 from pathlib import Path
 
 # Ajouter le répertoire parent au PYTHONPATH pour permettre les imports depuis src/
@@ -21,6 +23,9 @@ from src.participants import (
 # Import auth
 sys.path.append(str(Path(__file__).parent.parent))
 from auth import require_auth, init_session_state, show_user_info
+
+# Configuration logging
+logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="Participants", page_icon="👥", layout="wide")
 
@@ -93,15 +98,27 @@ if uploaded_file is not None:
 
     # ===== PARSING FICHIER =====
     try:
+        logger.info(f"Parsing fichier: {uploaded_file.name} ({file_extension})")
+
         if file_extension == "csv":
             # CSV : détection auto délimiteur
-            df_raw = pd.read_csv(uploaded_file, encoding="utf-8")
-            st.success(f"✅ Fichier CSV chargé : {len(df_raw)} ligne(s)")
+            try:
+                df_raw = pd.read_csv(uploaded_file, encoding="utf-8")
+                logger.info(f"CSV chargé: {len(df_raw)} lignes, {len(df_raw.columns)} colonnes")
+                st.success(f"✅ Fichier CSV chargé : {len(df_raw)} ligne(s)")
+            except UnicodeDecodeError:
+                # Essayer avec encoding différent
+                logger.warning("UTF-8 failed, trying ISO-8859-1")
+                uploaded_file.seek(0)
+                df_raw = pd.read_csv(uploaded_file, encoding="iso-8859-1")
+                st.success(f"✅ Fichier CSV chargé (ISO-8859-1) : {len(df_raw)} ligne(s)")
+                st.info("ℹ️ Encodage ISO-8859-1 utilisé (caractères accentués détectés)")
 
         elif file_extension == "xlsx":
             # Excel : sélection sheet
             excel_file = pd.ExcelFile(uploaded_file)
             sheet_names = excel_file.sheet_names
+            logger.info(f"Excel: {len(sheet_names)} feuille(s) détectée(s)")
 
             if len(sheet_names) > 1:
                 selected_sheet = st.selectbox(
@@ -114,14 +131,69 @@ if uploaded_file is not None:
                 st.info(f"📄 Feuille unique détectée : **{selected_sheet}**")
 
             df_raw = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
+            logger.info(f"Excel chargé: {len(df_raw)} lignes, {len(df_raw.columns)} colonnes")
             st.success(f"✅ Fichier Excel chargé : {len(df_raw)} ligne(s)")
 
         else:
+            logger.error(f"Format non supporté: {file_extension}")
             st.error(f"❌ Format non supporté : .{file_extension}")
             st.stop()
 
+    except pd.errors.EmptyDataError:
+        logger.error("Fichier vide")
+        st.error("""
+        ❌ **Fichier vide**
+
+        Le fichier uploadé ne contient aucune donnée.
+
+        Veuillez vérifier votre fichier et réessayer.
+        """)
+        st.stop()
+
+    except pd.errors.ParserError as e:
+        logger.error(f"Erreur parsing CSV: {e}")
+        st.error(f"""
+        ❌ **Erreur de format CSV**
+
+        Le fichier CSV n'est pas correctement formaté.
+
+        **Détails:** {str(e)}
+
+        **Solutions:**
+        - Vérifiez que le délimiteur est correct (virgule, point-virgule, etc.)
+        - Ouvrez le fichier dans Excel et resauvegardez au format CSV UTF-8
+        - Téléchargez notre template et copiez vos données dedans
+        """)
+        st.stop()
+
+    except PermissionError:
+        logger.error("Permission denied reading file")
+        st.error("""
+        ❌ **Erreur de permission**
+
+        Impossible de lire le fichier (permission refusée).
+
+        Fermez le fichier s'il est ouvert dans Excel et réessayez.
+        """)
+        st.stop()
+
     except Exception as e:
-        st.error(f"❌ Erreur lecture fichier : {str(e)}")
+        logger.exception("Erreur inattendue lecture fichier")
+        st.error(f"""
+        ❌ **Erreur inattendue lors de la lecture du fichier**
+
+        {str(e)}
+
+        **Solutions:**
+        - Vérifiez que le fichier n'est pas corrompu
+        - Essayez de le resauvegarder
+        - Téléchargez notre template et copiez vos données dedans
+
+        Contactez le support si le problème persiste.
+        """)
+        if st.session_state.get("debug_mode", False):
+            with st.expander("🐛 Debug Info (Admin)"):
+                st.code(traceback.format_exc())
         st.stop()
 
     st.divider()
@@ -249,8 +321,47 @@ if uploaded_file is not None:
             st.stop()
 
         # Validation complète
-        with st.spinner("Validation en cours..."):
-            participants, errors = validate_participants(df_mapped, auto_ids=True)
+        try:
+            with st.spinner("Validation en cours..."):
+                logger.info(f"Validation de {len(df_mapped)} participants")
+                participants, errors = validate_participants(df_mapped, auto_ids=True)
+                logger.info(f"Validation terminée: {len(participants)} valides, {len(errors)} erreurs")
+
+        except KeyError as e:
+            logger.error(f"Colonne requise manquante: {e}")
+            st.error(f"""
+            ❌ **Colonne requise manquante**
+
+            La colonne **{str(e)}** est requise mais absente du fichier.
+
+            Vérifiez votre mapping de colonnes ci-dessus.
+            """)
+            st.stop()
+
+        except ValueError as e:
+            logger.error(f"Erreur validation valeur: {e}")
+            st.error(f"""
+            ❌ **Erreur de validation**
+
+            {str(e)}
+
+            Vérifiez les valeurs dans votre fichier.
+            """)
+            st.stop()
+
+        except Exception as e:
+            logger.exception("Erreur inattendue validation participants")
+            st.error(f"""
+            ❌ **Erreur inattendue lors de la validation**
+
+            {str(e)}
+
+            Veuillez vérifier votre fichier ou contactez le support.
+            """)
+            if st.session_state.get("debug_mode", False):
+                with st.expander("🐛 Debug Info (Admin)"):
+                    st.code(traceback.format_exc())
+            st.stop()
 
         # Afficher rapport
         st.markdown("#### 📊 Rapport de Validation")

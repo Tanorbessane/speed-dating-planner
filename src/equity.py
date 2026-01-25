@@ -11,6 +11,7 @@ import copy
 import logging
 from typing import List, Set, Tuple, Optional
 
+from src.constraints_validator import validate_swap_constraints
 from src.meeting_history import compute_meeting_history
 from src.metrics import compute_metrics
 from src.models import Planning, PlanningConfig, PlanningConstraints, Participant
@@ -339,7 +340,7 @@ def _try_swap_participants(
             if equity_improvement > 0:
                 # Ce swap réduit l'equity_gap
                 # NOUVEAU: Vérifier contraintes AVANT d'appliquer swap
-                if constraints and _swap_violates_constraints(
+                if constraints and validate_swap_constraints(
                     session, table_over_id, p_over, table_under_id, p_under, constraints
                 ):
                     # Swap violerait contrainte hard → REJETER
@@ -360,66 +361,5 @@ def _try_swap_participants(
     return False
 
 
-def _swap_violates_constraints(
-    session,
-    table1_id: int,
-    p1: int,
-    table2_id: int,
-    p2: int,
-    constraints: PlanningConstraints,
-) -> bool:
-    """Vérifie si swap p1 ↔ p2 viole contraintes hard.
-
-    Vérifie :
-    1. Groupes cohésifs : membres doivent rester ensemble
-    2. Groupes exclusifs : membres ne doivent jamais être ensemble
-
-    Args:
-        session: Session actuelle
-        table1_id: Index table 1
-        p1: Participant à swapper (de table 1)
-        table2_id: Index table 2
-        p2: Participant à swapper (de table 2)
-        constraints: Contraintes de groupes
-
-    Returns:
-        True si swap interdit (viole contrainte), False si OK
-
-    Note:
-        Même logique que dans src.improvement._swap_violates_constraints
-    """
-    # Simuler état APRÈS swap
-    table1_after = (session.tables[table1_id] - {p1}) | {p2}
-    table2_after = (session.tables[table2_id] - {p2}) | {p1}
-
-    # Vérifier groupes cohésifs (membres doivent rester ensemble)
-    for group in constraints.cohesive_groups:
-        # Si p1 fait partie d'un groupe cohésif
-        if p1 in group.participant_ids:
-            # Vérifier que TOUS les membres (y compris p1) seraient à table2 après swap
-            if not group.participant_ids.issubset(table2_after):
-                return True  # p1 serait séparé du groupe → INTERDIT
-
-        # Si p2 fait partie d'un groupe cohésif
-        if p2 in group.participant_ids:
-            # Vérifier que TOUS les membres (y compris p2) seraient à table1 après swap
-            if not group.participant_ids.issubset(table1_after):
-                return True  # p2 serait séparé du groupe → INTERDIT
-
-    # Vérifier groupes exclusifs (membres ne doivent jamais être ensemble)
-    for group in constraints.exclusive_groups:
-
-        # Vérifier table1 après swap : 2+ membres du même groupe exclusif ?
-        members_in_table1 = table1_after & group.participant_ids
-        if len(members_in_table1) >= 2:
-            # 2+ membres du groupe exclusif seraient ensemble → INTERDIT
-            return True
-
-        # Vérifier table2 après swap : 2+ membres du même groupe exclusif ?
-        members_in_table2 = table2_after & group.participant_ids
-        if len(members_in_table2) >= 2:
-            # 2+ membres du groupe exclusif seraient ensemble → INTERDIT
-            return True
-
-    # Aucune violation détectée → swap autorisé
-    return False
+# NOTE: La fonction _swap_violates_constraints a été déplacée vers src/constraints_validator.py
+# pour éviter la duplication avec improvement.py. Utiliser validate_swap_constraints() à la place.

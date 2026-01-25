@@ -5,13 +5,13 @@ qui réduit les répétitions en appliquant des swaps bénéfiques de manière i
 
 Functions:
     improve_planning: Optimise un planning par recherche locale greedy
-    _swap_violates_constraints: Vérifie si swap viole contraintes hard
 """
 
 import copy
 import logging
 from typing import List, Set, Tuple, Optional
 
+from src.constraints_validator import validate_swap_constraints
 from src.meeting_history import compute_meeting_history
 from src.metrics import compute_metrics
 from src.models import Planning, PlanningConfig, Session, PlanningConstraints
@@ -184,7 +184,7 @@ def _improve_session(
                 for p2 in table2_participants:
                     try:
                         # NOUVEAU: Vérifier contraintes AVANT d'évaluer swap
-                        if constraints and _swap_violates_constraints(
+                        if constraints and validate_swap_constraints(
                             session, table1_id, p1, table2_id, p2, constraints
                         ):
                             # Swap violerait contrainte hard → REJETER
@@ -249,72 +249,5 @@ def _apply_swap(
     table2.add(p1)
 
 
-def _swap_violates_constraints(
-    session: Session,
-    table1_id: int,
-    p1: int,
-    table2_id: int,
-    p2: int,
-    constraints: PlanningConstraints,
-) -> bool:
-    """Vérifie si swap p1 ↔ p2 viole contraintes hard.
-
-    Vérifie :
-    1. Groupes cohésifs : membres doivent rester ensemble
-    2. Groupes exclusifs : membres ne doivent jamais être ensemble
-
-    Args:
-        session: Session actuelle
-        table1_id: Index table 1
-        p1: Participant à swapper (de table 1)
-        table2_id: Index table 2
-        p2: Participant à swapper (de table 2)
-        constraints: Contraintes de groupes
-
-    Returns:
-        True si swap interdit (viole contrainte), False si OK
-
-    Note:
-        Cette fonction est CRITIQUE pour garantir respect des contraintes hard.
-        Elle doit être appelée AVANT chaque swap dans l'optimizer.
-    """
-    # Simuler état APRÈS swap
-    table1_after = (session.tables[table1_id] - {p1}) | {p2}
-    table2_after = (session.tables[table2_id] - {p2}) | {p1}
-
-    # Vérifier groupes cohésifs (membres doivent rester ensemble)
-    for group in constraints.cohesive_groups:
-        # Si p1 fait partie d'un groupe cohésif
-        if p1 in group.participant_ids:
-            # Vérifier que TOUS les membres (y compris p1) seraient à table2 après swap
-            # Si pas tous à table2 → violation
-            if not group.participant_ids.issubset(table2_after):
-                return True  # p1 serait séparé du groupe → INTERDIT
-
-        # Si p2 fait partie d'un groupe cohésif
-        if p2 in group.participant_ids:
-            # Vérifier que TOUS les membres (y compris p2) seraient à table1 après swap
-            # Si pas tous à table1 → violation
-            if not group.participant_ids.issubset(table1_after):
-                return True  # p2 serait séparé du groupe → INTERDIT
-
-    # Vérifier groupes exclusifs (membres ne doivent jamais être ensemble)
-    for group in constraints.exclusive_groups:
-        # Simuler état APRÈS swap pour vérifier
-        table1_after = (session.tables[table1_id] - {p1}) | {p2}
-        table2_after = (session.tables[table2_id] - {p2}) | {p1}
-
-        # Vérifier table1 après swap : 2+ membres du même groupe exclusif ?
-        members_in_table1 = table1_after & group.participant_ids
-        if len(members_in_table1) >= 2:
-            # 2+ membres du groupe exclusif seraient ensemble → INTERDIT
-            return True
-
-        # Vérifier table2 après swap : 2+ membres du même groupe exclusif ?
-        members_in_table2 = table2_after & group.participant_ids
-        if len(members_in_table2) >= 2:
-            # 2+ membres du groupe exclusif seraient ensemble → INTERDIT
-            return True
-
-    # Aucune violation détectée → swap autorisé
-    return False
+# NOTE: La fonction _swap_violates_constraints a été déplacée vers src/constraints_validator.py
+# pour éviter la duplication avec equity.py. Utiliser validate_swap_constraints() à la place.

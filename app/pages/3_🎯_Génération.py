@@ -1,6 +1,8 @@
 """Page Génération - Créer planning optimisé."""
 
+import logging
 import sys
+import traceback
 from pathlib import Path
 
 # Ajouter le répertoire parent au PYTHONPATH pour permettre les imports depuis src/
@@ -11,10 +13,14 @@ import streamlit as st
 import time
 from src.planner import generate_optimized_planning
 from src.display_utils import format_table_participants
+from src.validation import InvalidConfigurationError
 
 # Import auth
 sys.path.append(str(Path(__file__).parent.parent))
 from auth import require_auth, init_session_state, show_user_info
+
+# Configuration logging
+logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="Génération", page_icon="🎯")
 
@@ -114,34 +120,112 @@ if st.button("🚀 Générer Planning Optimisé", type="primary", use_container_
 
         # Préparer participants si chargés (Story 4.4)
         participants = None
-        if "participants" in st.session_state and st.session_state.participants is not None:
-            from src.models import Participant
-            import pandas as pd
+        try:
+            if "participants" in st.session_state and st.session_state.participants is not None:
+                from src.models import Participant
+                import pandas as pd
 
-            participants_df = st.session_state.participants
-            # Convertir DataFrame → List[Participant]
-            participants = [
-                Participant(
-                    id=row["id"],
-                    nom=row["nom"],
-                    prenom=row["prenom"] if pd.notna(row.get("prenom")) else None,
-                    email=row["email"] if pd.notna(row.get("email")) else None,
-                    groupe=row["groupe"] if pd.notna(row.get("groupe")) else None,
-                    tags=row["tags"] if row.get("tags") else [],
-                    is_vip=row.get("is_vip", False),
-                )
-                for _, row in participants_df.iterrows()
-            ]
+                participants_df = st.session_state.participants
+                # Convertir DataFrame → List[Participant]
+                participants = [
+                    Participant(
+                        id=row["id"],
+                        nom=row["nom"],
+                        prenom=row["prenom"] if pd.notna(row.get("prenom")) else None,
+                        email=row["email"] if pd.notna(row.get("email")) else None,
+                        groupe=row["groupe"] if pd.notna(row.get("groupe")) else None,
+                        tags=row["tags"] if row.get("tags") else [],
+                        is_vip=row.get("is_vip", False),
+                    )
+                    for _, row in participants_df.iterrows()
+                ]
+                logger.info(f"Participants préparés: {len(participants)} (dont {sum(p.is_vip for p in participants)} VIP)")
+
+        except Exception as e:
+            logger.error(f"Erreur préparation participants: {e}")
+            st.error(f"""
+            ❌ **Erreur lors de la préparation des participants**
+
+            {str(e)}
+
+            Veuillez vérifier votre liste de participants dans **👥 Participants**.
+            """)
+            if st.session_state.get("debug_mode", False):
+                with st.expander("🐛 Debug Info"):
+                    st.code(traceback.format_exc())
+            st.stop()
 
         # Génération réelle (avec contraintes et participants si définis)
-        start_time = time.time()
-        planning, metrics = generate_optimized_planning(
-            config,
-            seed=seed,
-            constraints=constraints if has_constraints else None,
-            participants=participants,
-        )
-        duration = time.time() - start_time
+        try:
+            start_time = time.time()
+            logger.info(f"Démarrage génération: N={config.N}, X={config.X}, x={config.x}, S={config.S}, seed={seed}")
+
+            planning, metrics = generate_optimized_planning(
+                config,
+                seed=seed,
+                constraints=constraints if has_constraints else None,
+                participants=participants,
+            )
+            duration = time.time() - start_time
+            logger.info(f"Génération terminée en {duration:.3f}s - Equity gap: {metrics.equity_gap}, Répétitions: {metrics.total_repeat_pairs}")
+
+        except InvalidConfigurationError as e:
+            logger.warning(f"Configuration invalide: {e}")
+            st.error(f"""
+            ❌ **Configuration invalide**
+
+            {str(e)}
+
+            Veuillez corriger votre configuration dans **⚙️ Configuration**.
+            """)
+            st.stop()
+
+        except MemoryError:
+            logger.error(f"MemoryError lors de la génération (N={config.N})")
+            st.error(f"""
+            ❌ **Mémoire insuffisante**
+
+            La génération pour **{config.N} participants** nécessite trop de mémoire.
+
+            **Solutions:**
+            - Réduire le nombre de participants (N)
+            - Réduire le nombre de sessions (S)
+            - Contacter le support pour un plan avec plus de ressources
+            """)
+            st.stop()
+
+        except ValueError as e:
+            logger.error(f"ValueError génération: {e}")
+            st.error(f"""
+            ❌ **Erreur de valeur**
+
+            {str(e)}
+
+            Vérifiez que vos paramètres sont cohérents (N, X, x, S).
+            """)
+            if st.session_state.get("debug_mode", False):
+                with st.expander("🐛 Debug Info"):
+                    st.code(traceback.format_exc())
+            st.stop()
+
+        except Exception as e:
+            logger.exception("Erreur inattendue lors de la génération")
+            st.error(f"""
+            ❌ **Erreur inattendue lors de la génération**
+
+            {str(e)}
+
+            Si le problème persiste, veuillez:
+            1. Essayer avec un seed différent
+            2. Vérifier vos contraintes dans **🔗 Contraintes**
+            3. Contacter le support avec les détails ci-dessous
+
+            **Configuration:** N={config.N}, X={config.X}, x={config.x}, S={config.S}
+            """)
+            if st.session_state.get("debug_mode", False):
+                with st.expander("🐛 Debug Info (Mode Admin)"):
+                    st.code(traceback.format_exc())
+            st.stop()
 
         # Phase 3: Équité
         status_text.text("Phase 3/3 : Enforcement équité (FR6)...")
@@ -159,14 +243,20 @@ if st.button("🚀 Générer Planning Optimisé", type="primary", use_container_
     st.session_state.generation_time = duration
     st.session_state.seed_used = seed
 
-    # Logger l'utilisation
-    auth_manager = st.session_state.auth_manager
-    auth_manager.log_usage(
-        user_id=st.session_state.user['id'],
-        action="generate_planning",
-        participants_count=config.N,
-        sessions_count=config.S
-    )
+    # Logger l'utilisation (si auth_manager disponible)
+    try:
+        if hasattr(st.session_state, 'auth_manager') and st.session_state.auth_manager:
+            auth_manager = st.session_state.auth_manager
+            auth_manager.log_usage(
+                user_id=st.session_state.user['id'],
+                action="generate_planning",
+                participants_count=config.N,
+                sessions_count=config.S
+            )
+            logger.debug("Usage logged successfully")
+    except Exception as e:
+        # Non-bloquant : log silencieux
+        logger.warning(f"Impossible de logger l'usage: {e}")
 
     # Afficher résultats
     st.success(f"🎉 Planning généré avec succès en {duration:.3f}s !")

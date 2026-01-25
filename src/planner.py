@@ -17,11 +17,13 @@ from src.equity import enforce_equity
 from src.improvement import improve_planning
 from src.metrics import compute_metrics
 from src.models import Planning, PlanningConfig, PlanningMetrics, PlanningConstraints, Participant
+from src.telemetry import track_performance, log_metric
 from src.validation import validate_config
 
 logger = logging.getLogger(__name__)
 
 
+@track_performance("generate_optimized_planning")
 def generate_optimized_planning(
     config: PlanningConfig,
     seed: int = 42,
@@ -183,5 +185,10 @@ def generate_optimized_planning(
         )
 
     logger.info("=" * 70)
+
+    # Métriques telemetry (pour monitoring production)
+    log_metric("equity_gap_achieved", metrics_final.equity_gap, unit="gap", tags={"N": str(config.N)})
+    log_metric("total_repeat_pairs", metrics_final.total_repeat_pairs, unit="pairs", tags={"N": str(config.N)})
+    log_metric("participants_processed", config.N, unit="participants")
 
     return equitable, metrics_final

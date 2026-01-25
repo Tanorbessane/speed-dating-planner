@@ -1,6 +1,8 @@
 """Page Pricing - Plans et Upgrades."""
 
+import logging
 import sys
+import traceback
 from pathlib import Path
 
 # Ajouter le répertoire parent au PYTHONPATH pour permettre les imports depuis src/
@@ -14,6 +16,9 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent))
 from auth import require_auth, init_session_state, show_user_info
 from stripe_integration import create_checkout_session
+
+# Configuration logging
+logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="Pricing", page_icon="💳", layout="wide")
 
@@ -90,34 +95,63 @@ with col2:
             st.success("✅ Votre plan actuel")
         elif st.session_state.user['tier'] == 'free':
             if st.button("⬆️ Upgrade vers Pro - 29€/mois", key="upgrade_pro", type="primary", use_container_width=True):
-                # Créer session de paiement Stripe
-                user_email = st.session_state.user['email']
+                try:
+                    # Créer session de paiement Stripe
+                    user_email = st.session_state.user['email']
+                    logger.info(f"Création checkout session Pro pour {user_email}")
 
-                # URLs de retour (avec trailing slash pour éviter les problèmes de redirect)
-                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/"
-                cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
+                    # URLs de retour (avec trailing slash pour éviter les problèmes de redirect)
+                    success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/"
+                    cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
 
-                with st.spinner("Création de la session de paiement..."):
-                    success, checkout_url, error = create_checkout_session(
-                        user_email=user_email,
-                        tier="pro",
-                        success_url=success_url,
-                        cancel_url=cancel_url
-                    )
-
-                    if success and checkout_url:
-                        st.success("✅ Session de paiement créée !")
-                        st.info("👇 Cliquez sur le bouton ci-dessous pour accéder au paiement sécurisé Stripe")
-                        st.link_button(
-                            "🔒 Procéder au Paiement Sécurisé (Stripe)",
-                            checkout_url,
-                            type="primary",
-                            use_container_width=True
+                    with st.spinner("Création de la session de paiement..."):
+                        success, checkout_url, error = create_checkout_session(
+                            user_email=user_email,
+                            tier="pro",
+                            success_url=success_url,
+                            cancel_url=cancel_url
                         )
-                        st.caption("Vous serez redirigé vers la page de paiement sécurisée de Stripe")
-                    else:
-                        st.error(f"❌ {error}")
-                        st.info("Contactez le support : support@speeddating-planner.com")
+
+                        if success and checkout_url:
+                            logger.info(f"Checkout session Pro créée: {checkout_url[:50]}...")
+                            st.success("✅ Session de paiement créée !")
+                            st.info("👇 Cliquez sur le bouton ci-dessous pour accéder au paiement sécurisé Stripe")
+                            st.link_button(
+                                "🔒 Procéder au Paiement Sécurisé (Stripe)",
+                                checkout_url,
+                                type="primary",
+                                use_container_width=True
+                            )
+                            st.caption("Vous serez redirigé vers la page de paiement sécurisée de Stripe")
+                        else:
+                            logger.error(f"Échec création checkout Pro: {error}")
+                            st.error(f"""
+                            ❌ **Impossible de créer la session de paiement**
+
+                            {error}
+
+                            **Solutions:**
+                            - Vérifiez votre connexion internet
+                            - Réessayez dans quelques instants
+                            - Contactez le support si le problème persiste
+
+                            📧 Support: support@speeddating-planner.com
+                            """)
+
+                except Exception as e:
+                    logger.exception("Erreur inattendue création checkout Pro")
+                    st.error(f"""
+                    ❌ **Erreur inattendue lors de la création du paiement**
+
+                    {str(e)}
+
+                    Veuillez réessayer. Si le problème persiste, contactez le support.
+
+                    📧 support@speeddating-planner.com
+                    """)
+                    if st.session_state.get("debug_mode", False):
+                        with st.expander("🐛 Debug Info (Admin)"):
+                            st.code(traceback.format_exc())
         elif st.session_state.user['tier'] == 'business':
             if st.button("⬇️ Downgrade vers Pro", key="downgrade_pro", use_container_width=True):
                 st.warning("Contactez le support pour downgrader : support@speeddating-planner.com")
@@ -149,34 +183,63 @@ with col3:
             st.success("✅ Votre plan actuel")
         else:
             if st.button("💎 Upgrade vers Business - 99€/mois", key="upgrade_business", type="primary", use_container_width=True):
-                # Créer session de paiement Stripe
-                user_email = st.session_state.user['email']
+                try:
+                    # Créer session de paiement Stripe
+                    user_email = st.session_state.user['email']
+                    logger.info(f"Création checkout session Business pour {user_email}")
 
-                # URLs de retour (avec trailing slash pour éviter les problèmes de redirect)
-                success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/"
-                cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
+                    # URLs de retour (avec trailing slash pour éviter les problèmes de redirect)
+                    success_url = "https://tanorbessane-speed-dating-planner.streamlit.app/"
+                    cancel_url = "https://tanorbessane-speed-dating-planner.streamlit.app/Pricing"
 
-                with st.spinner("Création de la session de paiement..."):
-                    success, checkout_url, error = create_checkout_session(
-                        user_email=user_email,
-                        tier="business",
-                        success_url=success_url,
-                        cancel_url=cancel_url
-                    )
-
-                    if success and checkout_url:
-                        st.success("✅ Session de paiement créée !")
-                        st.info("👇 Cliquez sur le bouton ci-dessous pour accéder au paiement sécurisé Stripe")
-                        st.link_button(
-                            "🔒 Procéder au Paiement Sécurisé (Stripe)",
-                            checkout_url,
-                            type="primary",
-                            use_container_width=True
+                    with st.spinner("Création de la session de paiement..."):
+                        success, checkout_url, error = create_checkout_session(
+                            user_email=user_email,
+                            tier="business",
+                            success_url=success_url,
+                            cancel_url=cancel_url
                         )
-                        st.caption("Vous serez redirigé vers la page de paiement sécurisée de Stripe")
-                    else:
-                        st.error(f"❌ {error}")
-                        st.info("Contactez le support : support@speeddating-planner.com")
+
+                        if success and checkout_url:
+                            logger.info(f"Checkout session Business créée: {checkout_url[:50]}...")
+                            st.success("✅ Session de paiement créée !")
+                            st.info("👇 Cliquez sur le bouton ci-dessous pour accéder au paiement sécurisé Stripe")
+                            st.link_button(
+                                "🔒 Procéder au Paiement Sécurisé (Stripe)",
+                                checkout_url,
+                                type="primary",
+                                use_container_width=True
+                            )
+                            st.caption("Vous serez redirigé vers la page de paiement sécurisée de Stripe")
+                        else:
+                            logger.error(f"Échec création checkout Business: {error}")
+                            st.error(f"""
+                            ❌ **Impossible de créer la session de paiement**
+
+                            {error}
+
+                            **Solutions:**
+                            - Vérifiez votre connexion internet
+                            - Réessayez dans quelques instants
+                            - Contactez le support si le problème persiste
+
+                            📧 Support: support@speeddating-planner.com
+                            """)
+
+                except Exception as e:
+                    logger.exception("Erreur inattendue création checkout Business")
+                    st.error(f"""
+                    ❌ **Erreur inattendue lors de la création du paiement**
+
+                    {str(e)}
+
+                    Veuillez réessayer. Si le problème persiste, contactez le support.
+
+                    📧 support@speeddating-planner.com
+                    """)
+                    if st.session_state.get("debug_mode", False):
+                        with st.expander("🐛 Debug Info (Admin)"):
+                            st.code(traceback.format_exc())
     else:
         st.button("Contacter Sales", use_container_width=True, disabled=True)
         st.caption("Créez un compte pour commencer")

@@ -38,6 +38,53 @@ streamlit run app/main.py
 
 ---
 
+## ⚙️ Configuration
+
+### Configuration Stripe (Paiements)
+
+Pour activer les fonctionnalités de paiement (plans Pro et Business), configurez vos clés API Stripe :
+
+#### Option 1 : Streamlit Secrets (Recommandé)
+
+1. **Créer le fichier de configuration** :
+   ```bash
+   cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+   ```
+
+2. **Obtenir vos clés Stripe** :
+   - Créer un compte sur [stripe.com](https://stripe.com)
+   - Aller dans **Developers > API keys**
+   - Copier votre **Secret key** (sk_test_...) et **Publishable key** (pk_test_...)
+
+3. **Éditer `.streamlit/secrets.toml`** :
+   ```toml
+   [stripe]
+   secret_key = "sk_test_YOUR_SECRET_KEY_HERE"
+   publishable_key = "pk_test_YOUR_PUBLISHABLE_KEY_HERE"
+   ```
+
+4. **Important** : Ne **jamais** committer `secrets.toml` dans Git (déjà dans `.gitignore`)
+
+#### Option 2 : Variables d'Environnement (Déploiement non-Streamlit)
+
+```bash
+# Créer fichier .env
+cp .env.example .env
+
+# Éditer .env
+STRIPE_SECRET_KEY=sk_test_YOUR_SECRET_KEY_HERE
+STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_PUBLISHABLE_KEY_HERE
+```
+
+#### Mode Test vs Production
+
+- **Développement** : Utiliser clés **TEST** (`sk_test_`, `pk_test_`)
+- **Production** : Utiliser clés **LIVE** (`sk_live_`, `pk_live_`) ⚠️ Paiements réels !
+
+Pour plus de détails, voir [.streamlit/secrets.toml.example](.streamlit/secrets.toml.example)
+
+---
+
 ## 📖 Guide d'Utilisation
 
 ### Workflow Simple
@@ -88,10 +135,18 @@ pytest tests/ -v
 
 ## 📚 Documentation Complète
 
+### Architecture & Développement
+- [Architecture Review (2026-01)](docs/ARCHITECTURE_REVIEW_2026-01.md) - Revue architecturale complète
+- [Architecture Streamlit](docs/architecture-streamlit.md) - Architecture application web
+- [Architecture Technique](docs/architecture.md) - Architecture core algorithm
+
+### Déploiement & Production
 - [Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT_GUIDE.md)
-- [Marketing & Sales Strategy](docs/MARKETING_SALES_STRATEGY.md)
 - [Deploy Now](DEPLOY_NOW.md)
-- [Validation Report](docs/VALIDATION_REPORT_EPIC5.md)
+
+### Business & Validation
+- [Marketing & Sales Strategy](docs/MARKETING_SALES_STRATEGY.md)
+- [Validation Report Epic 5](docs/VALIDATION_REPORT_EPIC5.md)
 
 ---
 
